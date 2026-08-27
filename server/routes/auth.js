@@ -59,7 +59,13 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
   try {
     let userEmail = passedEmail || req.query.email;
     if (!userEmail) {
-      userEmail = role === 'admin' ? 'admin@hiresmart.ai' : 'rocklandrowanm@gmail.com';
+      if (role === 'admin') {
+        userEmail = 'admin@hiresmart.ai';
+      } else if (role === 'recruiter') {
+        userEmail = 'company@hiresmart.ai';
+      } else {
+        userEmail = 'rocklandrowanm@gmail.com';
+      }
     }
 
     if (role === 'candidate' && userEmail === 'admin@hiresmart.ai') {
@@ -72,6 +78,8 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         userName = 'Rockland Rowan';
       } else if (userEmail.toLowerCase().includes('admin')) {
         userName = 'Admin Head';
+      } else if (userEmail.toLowerCase().includes('company')) {
+        userName = 'Company Recruiter';
       } else {
         const prefix = userEmail.split('@')[0];
         userName = prefix.replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -96,7 +104,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         fallbackUser.name = 'Admin Head';
       } else {
         fallbackUser.role = role;
-        fallbackUser.name = userName;
+        if (passedName) fallbackUser.name = passedName;
       }
       if (!fallbackUser.avatar) fallbackUser.avatar = userAvatar;
     }
