@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import API from '../services/api';
+import API, { SERVER_BASE_URL } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
@@ -264,7 +264,7 @@ export default function RecruiterApplications() {
                             {app.resumeUrl && (
                               <div style={{ marginTop: '6px' }}>
                                 <a
-                                  href={app.resumeUrl.startsWith('http') ? app.resumeUrl : `http://localhost:5000${app.resumeUrl}`}
+                                  href={app.resumeUrl.startsWith('http') ? app.resumeUrl : `${SERVER_BASE_URL}${app.resumeUrl}`}
                                   target="_blank"
                                   rel="noreferrer"
                                   style={{

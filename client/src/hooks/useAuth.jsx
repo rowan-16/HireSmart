@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import API from '../services/api';
+import API, { API_BASE_URL } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -48,7 +48,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const loginWithGoogle = useCallback((role = 'recruiter', email = '', name = '') => {
-    let url = `http://localhost:5000/api/auth/google?role=${role}`;
+    let url = `${API_BASE_URL}/auth/google?role=${role}`;
     if (email) url += `&email=${encodeURIComponent(email)}`;
     if (name) url += `&name=${encodeURIComponent(name)}`;
     window.location.href = url;

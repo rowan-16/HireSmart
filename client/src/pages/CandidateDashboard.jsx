@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import API from '../services/api';
+import API, { SERVER_BASE_URL } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
@@ -267,7 +267,7 @@ export default function CandidateDashboard() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                               {app.resumeUrl && (
                                 <a
-                                  href={app.resumeUrl.startsWith('http') ? app.resumeUrl : `http://localhost:5000${app.resumeUrl}`}
+                                  href={app.resumeUrl.startsWith('http') ? app.resumeUrl : `${SERVER_BASE_URL}${app.resumeUrl}`}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="btn btn-secondary btn-sm"

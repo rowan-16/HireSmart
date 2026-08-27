@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import API from '../services/api';
+import API, { SERVER_BASE_URL } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
@@ -86,7 +86,7 @@ export default function CandidateProfile() {
   };
 
   const resumeFullUrl = user?.resumeUrl
-    ? (user.resumeUrl.startsWith('http') ? user.resumeUrl : `http://localhost:5000${user.resumeUrl}`)
+    ? (user.resumeUrl.startsWith('http') ? user.resumeUrl : `${SERVER_BASE_URL}${user.resumeUrl}`)
     : '';
 
   return (
