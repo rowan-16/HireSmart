@@ -13,18 +13,20 @@ export default function GoogleSuccess() {
     const name = params.get('name');
     const email = params.get('email');
     const role = params.get('role');
+    const avatar = params.get('avatar') || '';
 
     if (token) {
+      const userData = { name, email, role, avatar };
       if (window.opener) {
         // Send login payload to main window and close popup
         window.opener.postMessage({
           type: 'GOOGLE_LOGIN_SUCCESS',
           token,
-          user: { name, email, role },
+          user: userData,
         }, '*');
         window.close();
       } else {
-        loginFromToken(token, { name, email, role });
+        loginFromToken(token, userData);
         toast.success(`Welcome, ${name}!`);
         const targetPath = role === 'candidate' ? '/candidate/dashboard' : '/dashboard';
         navigate(targetPath, { replace: true });

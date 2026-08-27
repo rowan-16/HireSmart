@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import API from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -56,10 +57,10 @@ export default function Dashboard() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        <div className="page-header">
-          <h1 className="page-title">Welcome back, <span>{user?.name?.split(' ')[0]}</span> 👋</h1>
-          <p className="page-sub">Here's your recruitment overview for today</p>
-        </div>
+        <Header 
+          title={`Welcome back, ${user?.name?.split(' ')[0] || 'User'} 👋`} 
+          subtitle={user?.role === 'admin' ? "Admin Superuser Dashboard & System Controls" : "Here's your recruitment overview for today"} 
+        />
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--muted)' }}><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2rem' }}></i></div>
@@ -80,7 +81,7 @@ export default function Dashboard() {
                 <div className="card-inner">
                   <div className="flex-between mb-2">
                     <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Recent Activity</h3>
-                    <Link to="/audit" className="btn btn-secondary btn-sm">View All</Link>
+                    {user?.role === 'admin' && <Link to="/audit" className="btn btn-secondary btn-sm">View All</Link>}
                   </div>
                   <div className="timeline">
                     {(stats?.recentActivity || []).length === 0 ? (
@@ -100,7 +101,9 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <Link to="/jobs/create" className="btn btn-primary"><i className="fa-solid fa-plus"></i> Create New Job</Link>
                       <Link to="/jobs" className="btn btn-secondary"><i className="fa-solid fa-briefcase"></i> View All Jobs</Link>
-                      <Link to="/audit" className="btn btn-secondary"><i className="fa-solid fa-clock-rotate-left"></i> Audit Trail</Link>
+                      {user?.role === 'admin' && (
+                        <Link to="/audit" className="btn btn-secondary"><i className="fa-solid fa-clock-rotate-left"></i> Audit Trail</Link>
+                      )}
                     </div>
                   </div>
                 </div>

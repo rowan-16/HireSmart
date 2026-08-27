@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import API from '../services/api';
 
 const STATUS_BADGE = { active: 'badge-success', closed: 'badge-danger', draft: 'badge-muted' };
@@ -17,10 +18,11 @@ export default function Jobs() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        <div className="flex-between mb-2" style={{ alignItems: 'flex-start' }}>
-          <div className="page-header" style={{ marginBottom: 0 }}>
-            <h1 className="page-title">Job <span>Postings</span></h1>
-            <p className="page-sub">Manage active recruitment positions</p>
+        <Header title="Job Postings & Rankings" subtitle="Manage recruitment positions and view automated AI resume rankings" />
+
+        <div className="flex-between mb-3" style={{ marginTop: '-0.5rem' }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--muted)' }}>
+            Showing {jobs.length} active positions
           </div>
           <Link to="/jobs/create" className="btn btn-primary"><i className="fa-solid fa-plus"></i> New Job</Link>
         </div>
@@ -52,15 +54,17 @@ export default function Jobs() {
                       {job.requiredSkills?.length > 6 && <span className="tag">+{job.requiredSkills.length - 6}</span>}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end', minWidth: 140 }}>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                      <i className="fa-solid fa-users"></i> {job.candidateCount || 0} candidates
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end', minWidth: 160 }}>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                      <i className="fa-solid fa-users" style={{ color: 'var(--c2)' }}></i> {job.candidateCount || 0} candidates
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
                       {job.minExperience > 0 ? `${job.minExperience}+ yrs exp` : 'Any experience'}
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <Link to="/jobs/applications" className="btn btn-sm btn-primary"><i className="fa-solid fa-users"></i> View Applicants</Link>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      <Link to={`/jobs/applications?jobId=${job._id}`} className="btn btn-sm btn-primary">
+                        <i className="fa-solid fa-ranking-star"></i> Rank Resumes
+                      </Link>
                     </div>
                   </div>
                 </div>

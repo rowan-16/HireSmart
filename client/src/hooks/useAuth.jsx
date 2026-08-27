@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import API from '../services/api';
 
 const AuthContext = createContext(null);
@@ -7,6 +7,29 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
   });
+
+  // Automatically sync fresh user profile from backend on load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      API.get('/auth/me')
+        .then(r => {
+          if (r.data.success && r.data.user) {
+            localStorage.setItem('user', JSON.stringify(r.data.user));
+            setUser(r.data.user);
+          }
+        })
+        .catch(err => console.log('Auth check error:', err));
+    }
+  }, []);
+
+  const updateUser = useCallback((updatedData) => {
+    setUser(prev => {
+      const merged = { ...prev, ...updatedData };
+      localStorage.setItem('user', JSON.stringify(merged));
+      return merged;
+    });
+  }, []);
 
   const login = useCallback(async (email, password, role) => {
     const { data } = await API.post('/auth/login', { email, password, role });
@@ -24,8 +47,11 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
-  const loginWithGoogle = useCallback((role = 'recruiter') => {
-    window.location.href = `http://localhost:5000/api/auth/google?role=${role}`;
+  const loginWithGoogle = useCallback((role = 'recruiter', email = '', name = '') => {
+    let url = `http://localhost:5000/api/auth/google?role=${role}`;
+    if (email) url += `&email=${encodeURIComponent(email)}`;
+    if (name) url += `&name=${encodeURIComponent(name)}`;
+    window.location.href = url;
   }, []);
 
   const loginFromToken = useCallback((token, userData) => {
@@ -48,7 +74,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, loginFromToken, logout, deleteAccount }}>
+    <AuthContext.Provider value={{ user, setUser, updateUser, login, register, loginWithGoogle, loginFromToken, logout, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

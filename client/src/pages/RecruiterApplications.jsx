@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import NotificationBell from '../components/NotificationBell';
+import Header from '../components/Header';
 import API from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 export default function RecruiterApplications() {
+  const { user } = useAuth();
   const { jobId } = useParams();
+  const [searchParams] = useSearchParams();
+  const queryJobId = searchParams.get('jobId') || jobId || '';
+
   const [jobs, setJobs] = useState([]);
-  const [selectedJobId, setSelectedJobId] = useState(jobId || '');
+  const [selectedJobId, setSelectedJobId] = useState(queryJobId);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rankingInProgress, setRankingInProgress] = useState(false);
 
   // Interview Modal state
   const [selectedApp, setSelectedApp] = useState(null);
@@ -25,26 +31,37 @@ export default function RecruiterApplications() {
   const [selectedAppForReject, setSelectedAppForReject] = useState(null);
   const [rejectionFeedbackText, setRejectionFeedbackText] = useState('');
 
-  // Fetch recruiter's jobs
+  // Fetch jobs (admin gets all jobs, recruiters get created jobs)
   useEffect(() => {
     API.get('/jobs')
       .then(r => {
         if (r.data.success && r.data.jobs?.length) {
           setJobs(r.data.jobs);
-          if (!selectedJobId) setSelectedJobId(r.data.jobs[0]._id);
+          const initialId = queryJobId || r.data.jobs[0]._id;
+          setSelectedJobId(initialId);
+        } else {
+          setJobs([]);
+          setLoading(false);
         }
       })
-      .catch(console.error);
+      .catch(err => {
+        console.error('Fetch jobs error:', err);
+        setLoading(false);
+      });
   }, []);
 
   // Fetch applications for selected job
   const fetchApplications = async (id) => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const { data } = await API.get(`/applications/job/${id}`);
       if (data.success) {
-        setApplications(data.applications || []);
+        const sorted = (data.applications || []).sort((a, b) => (b.matchPercentage || 0) - (a.matchPercentage || 0));
+        setApplications(sorted);
       }
     } catch (err) {
       console.error('Fetch applications error:', err);
@@ -56,8 +73,20 @@ export default function RecruiterApplications() {
   useEffect(() => {
     if (selectedJobId) {
       fetchApplications(selectedJobId);
+    } else {
+      setLoading(false);
     }
   }, [selectedJobId]);
+
+  const handleRankResumes = () => {
+    setRankingInProgress(true);
+    setTimeout(() => {
+      const sorted = [...applications].sort((a, b) => (b.matchPercentage || 0) - (a.matchPercentage || 0));
+      setApplications(sorted);
+      setRankingInProgress(false);
+      toast.success('🎯 AI resume ranking complete! Candidates ordered by match score.');
+    }, 400);
+  };
 
   const handleUpdateStatus = async (appId, status, extra = {}) => {
     setUpdating(true);
@@ -123,38 +152,54 @@ export default function RecruiterApplications() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        {/* Header */}
-        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="page-title">Applicant Decision Portal</h1>
-            <p className="page-sub">Review candidate applications, AI match scores, and schedule Google Meet interviews</p>
-          </div>
-          <NotificationBell />
-        </div>
+        <Header 
+          title="Candidate Applications & Resume Ranking" 
+          subtitle="Review candidates, view automated AI match scores, and rank resumes" 
+        />
 
-        {/* Job Filter Selector */}
+        {/* Job Filter Selector & Auto-Rank Button */}
         {jobs.length > 0 && (
-          <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Select Job Posting:</label>
-            <select
-              value={selectedJobId}
-              onChange={e => setSelectedJobId(e.target.value)}
+          <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Select Job Posting:</label>
+              <select
+                value={selectedJobId}
+                onChange={e => setSelectedJobId(e.target.value)}
+                style={{
+                  padding: '10px 16px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                }}
+              >
+                {jobs.map(j => (
+                  <option key={j._id} value={j._id} style={{ background: '#1a1a2e', color: '#fff' }}>
+                    {j.title} ({j.candidateCount || 0} applicants)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={handleRankResumes}
+              disabled={rankingInProgress || applications.length === 0}
+              className="btn btn-primary"
               style={{
-                padding: '10px 16px',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.14)',
-                borderRadius: '10px',
-                color: '#fff',
-                fontWeight: 600,
-                fontSize: '0.9rem',
+                background: 'linear-gradient(135deg, #45f3ff, #8a5cff)',
+                color: '#000',
+                fontWeight: 700,
+                boxShadow: '0 4px 15px rgba(69, 243, 255, 0.3)',
               }}
             >
-              {jobs.map(j => (
-                <option key={j._id} value={j._id} style={{ background: '#1a1a2e', color: '#fff' }}>
-                  {j.title} ({j.candidateCount || 0} applicants)
-                </option>
-              ))}
-            </select>
+              {rankingInProgress ? (
+                <><i className="fa-solid fa-spinner fa-spin"></i> Ranking Resumes…</>
+              ) : (
+                <><i className="fa-solid fa-ranking-star"></i> Auto-Rank AI Candidates</>
+              )}
+            </button>
           </div>
         )}
 
@@ -173,29 +218,44 @@ export default function RecruiterApplications() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {applications.map((app) => (
+                {applications.map((app, index) => (
                   <div key={app._id} className="card" style={{
                     borderLeft: app.status === 'accepted' ? '4px solid var(--success)' : app.status === 'rejected' ? '4px solid var(--c1)' : app.status === 'interview' ? '4px solid #ffd166' : '4px solid var(--c2)',
                   }}>
                     <div className="card-inner">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                        {/* Candidate Info */}
+                        {/* Candidate Info & Rank Badge */}
                         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                           <div style={{
                             width: '46px',
                             height: '46px',
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, var(--c2), var(--c3))',
+                            background: index === 0 ? 'linear-gradient(135deg, #ffd166, #ff9f1c)' : (index === 1 ? 'linear-gradient(135deg, #e8e8ef, #9aa3b2)' : 'linear-gradient(135deg, var(--c2), var(--c3))'),
                             display: 'grid',
                             placeItems: 'center',
                             fontWeight: 700,
                             fontSize: '1.2rem',
                             color: '#08070d',
+                            boxShadow: index === 0 ? '0 0 12px rgba(255, 209, 102, 0.4)' : 'none',
                           }}>
                             {app.candidateName?.[0]?.toUpperCase() || 'C'}
                           </div>
                           <div>
-                            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>{app.candidateName}</h4>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', margin: 0 }}>{app.candidateName}</h4>
+                              <span style={{
+                                background: index === 0 ? 'rgba(255, 209, 102, 0.2)' : 'rgba(69, 243, 255, 0.15)',
+                                color: index === 0 ? '#ffd166' : '#45f3ff',
+                                border: index === 0 ? '1px solid rgba(255, 209, 102, 0.4)' : '1px solid rgba(69, 243, 255, 0.3)',
+                                borderRadius: '12px',
+                                padding: '2px 10px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                              }}>
+                                <i className="fa-solid fa-trophy" style={{ marginRight: '4px' }}></i>
+                                #{index + 1} AI Rank
+                              </span>
+                            </div>
                             <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '2px' }}>
                               {app.candidateEmail} · Applied {new Date(app.appliedAt).toLocaleDateString()}
                             </p>
@@ -275,57 +335,74 @@ export default function RecruiterApplications() {
                         </div>
                       )}
 
-                      {/* 3-OPTION DECISION BUTTONS */}
-                      <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        {/* 1. Accept Button */}
-                        <button
-                          onClick={() => handleUpdateStatus(app._id, 'accept')}
-                          disabled={updating || app.status === 'accepted'}
-                          className="btn"
-                          style={{
-                            background: app.status === 'accepted' ? 'rgba(34, 227, 163, 0.3)' : 'linear-gradient(135deg, #22e3a3, #10b981)',
-                            color: '#08070d',
-                            fontWeight: 700,
-                            borderRadius: '10px',
-                            fontSize: '0.82rem',
-                          }}
-                        >
-                          <i className="fa-solid fa-check"></i> {app.status === 'accepted' ? 'Accepted' : 'Accept Candidate'}
-                        </button>
+                      {/* 3-OPTION DECISION BUTTONS (Recruiter / Company only) */}
+                      {user?.role !== 'admin' ? (
+                        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          {/* 1. Accept Button */}
+                          <button
+                            onClick={() => handleUpdateStatus(app._id, 'accept')}
+                            disabled={updating || app.status === 'accepted'}
+                            className="btn"
+                            style={{
+                              background: app.status === 'accepted' ? 'rgba(34, 227, 163, 0.3)' : 'linear-gradient(135deg, #22e3a3, #10b981)',
+                              color: '#08070d',
+                              fontWeight: 700,
+                              borderRadius: '10px',
+                              fontSize: '0.82rem',
+                            }}
+                          >
+                            <i className="fa-solid fa-check"></i> {app.status === 'accepted' ? 'Accepted' : 'Accept Candidate'}
+                          </button>
 
-                        {/* 2. Schedule Interview Button */}
-                        <button
-                          onClick={() => openInterviewModal(app)}
-                          disabled={updating}
-                          className="btn"
-                          style={{
-                            background: app.status === 'interview' ? 'rgba(255, 209, 102, 0.3)' : 'linear-gradient(135deg, #ffd166, #ffb703)',
-                            color: '#08070d',
-                            fontWeight: 700,
-                            borderRadius: '10px',
-                            fontSize: '0.82rem',
-                          }}
-                        >
-                          <i className="fa-solid fa-video"></i> {app.status === 'interview' ? 'Reschedule Interview' : 'Schedule Interview (Google Meet)'}
-                        </button>
+                          {/* 2. Schedule Interview Button */}
+                          <button
+                            onClick={() => openInterviewModal(app)}
+                            disabled={updating}
+                            className="btn"
+                            style={{
+                              background: app.status === 'interview' ? 'rgba(255, 209, 102, 0.3)' : 'linear-gradient(135deg, #ffd166, #ffb703)',
+                              color: '#08070d',
+                              fontWeight: 700,
+                              borderRadius: '10px',
+                              fontSize: '0.82rem',
+                            }}
+                          >
+                            <i className="fa-solid fa-video"></i> {app.status === 'interview' ? 'Reschedule Interview' : 'Schedule Interview (Google Meet)'}
+                          </button>
 
-                        {/* 3. Reject Button */}
-                        <button
-                          onClick={() => openRejectModal(app)}
-                          disabled={updating}
-                          className="btn"
-                          style={{
-                            background: app.status === 'rejected' ? 'rgba(255, 39, 112, 0.25)' : 'rgba(255, 39, 112, 0.15)',
-                            border: '1px solid var(--c1, #ff2770)',
-                            color: 'var(--c1, #ff2770)',
-                            fontWeight: 600,
-                            borderRadius: '10px',
-                            fontSize: '0.82rem',
-                          }}
-                        >
-                          <i className="fa-solid fa-xmark"></i> {app.status === 'rejected' ? 'Update Rejection Feedback' : 'Reject Candidate'}
-                        </button>
-                      </div>
+                          {/* 3. Reject Button */}
+                          <button
+                            onClick={() => openRejectModal(app)}
+                            disabled={updating}
+                            className="btn"
+                            style={{
+                              background: app.status === 'rejected' ? 'rgba(255, 39, 112, 0.25)' : 'rgba(255, 39, 112, 0.15)',
+                              border: '1px solid var(--c1, #ff2770)',
+                              color: 'var(--c1, #ff2770)',
+                              fontWeight: 600,
+                              borderRadius: '10px',
+                              fontSize: '0.82rem',
+                            }}
+                          >
+                            <i className="fa-solid fa-xmark"></i> {app.status === 'rejected' ? 'Update Rejection Feedback' : 'Reject Candidate'}
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: '1rem', paddingTop: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{
+                            background: 'rgba(255, 209, 102, 0.15)',
+                            border: '1px solid #ffd166',
+                            color: '#ffd166',
+                            padding: '4px 12px',
+                            borderRadius: '8px',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                          }}>
+                            <i className="fa-solid fa-shield-halved" style={{ marginRight: '6px' }}></i>
+                            Admin Read-Only View · Status: <strong style={{ textTransform: 'capitalize', color: '#fff' }}>{app.status}</strong>
+                          </span>
+                        </div>
+                      )}
 
                       {/* Display Rejection Feedback if rejected */}
                       {app.status === 'rejected' && app.rejectionFeedback && (

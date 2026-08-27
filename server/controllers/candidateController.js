@@ -17,6 +17,9 @@ exports.analyzeResume = async (req, res) => {
       } else {
         rawText = `${req.user.name} Candidate Resume (${req.file.originalname}). Skills: JavaScript, React, Node.js, Python, SQL, Git, Problem Solving, Communication. 3 years experience.`;
       }
+      // Save resume URL on user record
+      req.user.resumeUrl = `/uploads/${req.file.filename}`;
+      await req.user.save({ validateBeforeSave: false });
     }
 
     if (!rawText || rawText.trim().length === 0) {
@@ -55,6 +58,7 @@ exports.analyzeResume = async (req, res) => {
 
     res.json({
       success: true,
+      resumeUrl: req.user.resumeUrl,
       extractedData: {
         skills: extracted.skills,
         technicalSkills: extracted.technicalSkills,

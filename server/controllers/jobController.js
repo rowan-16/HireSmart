@@ -68,7 +68,17 @@ exports.createJob = async (req, res) => {
 // GET /api/jobs
 exports.getJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ createdBy: req.user._id }).sort('-createdAt');
+    const filter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+    const rawJobs = await Job.find(filter).sort('-createdAt');
+
+    const Application = require('../models/Application');
+    const jobs = await Promise.all(rawJobs.map(async (j) => {
+      const count = await Application.countDocuments({ jobId: j._id });
+      const obj = j.toObject();
+      obj.candidateCount = count;
+      return obj;
+    }));
+
     res.json({ success: true, jobs });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

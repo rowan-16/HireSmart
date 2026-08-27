@@ -10,7 +10,9 @@ passport.use(new GoogleStrategy({
 }, async (req, accessToken, refreshToken, profile, done) => {
   try {
     console.log('[Google Profile Received]:', profile ? `${profile.displayName} <${profile.emails?.[0]?.value}>` : 'NO PROFILE');
+    const googleAvatar = profile.photos?.[0]?.value || profile._json?.picture || '';
     const role = (req.query.state === 'candidate' || req.query.role === 'candidate') ? 'candidate' : 'recruiter';
+    
     let user = await User.findOne({ googleId: profile.id });
     if (!user) {
       const email = profile.emails?.[0]?.value;
@@ -19,17 +21,22 @@ passport.use(new GoogleStrategy({
       user = await User.findOne({ email });
       if (user) {
         user.googleId = profile.id;
-        if (profile.photos?.[0]?.value) user.avatar = profile.photos[0].value;
+        if (googleAvatar) user.avatar = googleAvatar;
+        if (profile.displayName) user.name = profile.displayName;
         await user.save({ validateBeforeSave: false });
       } else {
         user = await User.create({
           name: profile.displayName || email.split('@')[0],
           email: email,
           googleId: profile.id,
-          avatar: profile.photos?.[0]?.value || '',
+          avatar: googleAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.displayName || email)}&background=4285F4&color=fff&bold=true`,
           role,
         });
       }
+    } else {
+      if (googleAvatar) user.avatar = googleAvatar;
+      if (profile.displayName) user.name = profile.displayName;
+      await user.save({ validateBeforeSave: false });
     }
     return done(null, user);
   } catch (err) {

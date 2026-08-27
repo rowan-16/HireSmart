@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import API from '../services/api';
 
 const PIE_COLORS = ['#22e3a3', '#ff2770', '#8a5cff', '#ffd166', '#45f3ff'];
@@ -26,13 +27,10 @@ export default function FairnessDashboard() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        <div className="flex-between mb-2">
-          <div className="page-header" style={{ marginBottom: 0 }}>
-            <h1 className="page-title">Fairness <span>Dashboard</span></h1>
-            <p className="page-sub">Bias auditing and fairness metrics — protected attributes excluded from all scoring</p>
-          </div>
-          <Link to={`/jobs/${jobId}/ranking`} className="btn btn-secondary"><i className="fa-solid fa-arrow-left"></i> Back to Ranking</Link>
-        </div>
+        <Header 
+          title="Fairness & Demographic Bias Dashboard" 
+          subtitle="Bias auditing and fairness metrics — protected attributes excluded from all scoring" 
+        />
 
         <div className="alert alert-info mb-2">
           <i className="fa-solid fa-circle-info"></i>

@@ -148,6 +148,10 @@ exports.getCandidateApplications = async (req, res) => {
 // PUT /api/applications/:id/status (Recruiter 3-option decision: reject, accept, interview)
 exports.updateApplicationStatus = async (req, res) => {
   try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin accounts cannot alter applicant hiring status' });
+    }
+
     const { id } = req.params;
     const { status, date, time, meetLink, notes, rejectionFeedback } = req.body;
 

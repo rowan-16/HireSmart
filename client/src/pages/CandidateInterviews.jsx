@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import NotificationBell from '../components/NotificationBell';
+import Header from '../components/Header';
 import API from '../services/api';
 
 export default function CandidateInterviews() {
@@ -23,13 +23,10 @@ export default function CandidateInterviews() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="page-title">Scheduled Interviews</h1>
-            <p className="page-sub">Access your video interview invitations and Google Meet meeting links</p>
-          </div>
-          <NotificationBell />
-        </div>
+        <Header 
+          title="Scheduled Interviews" 
+          subtitle="Access your video interview invitations and Google Meet links" 
+        />
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--muted)' }}>

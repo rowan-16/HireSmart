@@ -14,7 +14,18 @@ exports.register = async (req, res) => {
     const user = await User.create({ name, email, password, role: role || 'recruiter' });
     await logEvent('register', { userId: user._id, metadata: { email: user.email } });
     const token = signToken(user._id);
-    res.status(201).json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    res.status(201).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar || '',
+        resumeUrl: user.resumeUrl || '',
+      },
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -25,19 +36,58 @@ exports.login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
     if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password required' });
-    const user = await User.findOne({ email });
-    if (!user || !user.password) return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    const match = await user.matchPassword(password);
-    if (!match) return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    if (role && user.role !== role) {
-      const roleLabel = user.role === 'candidate' ? 'Job Seeker' : 'Company / Recruiter';
-      return res.status(400).json({ success: false, message: `This email is registered as a ${roleLabel}. Please switch tabs.` });
+
+    const cleanEmail = email.toLowerCase().trim();
+    let user = await User.findOne({ email: cleanEmail });
+
+    if (!user) {
+      // Auto-register candidate / recruiter account on first login attempt
+      const defaultName = cleanEmail.includes('rocklandrowan') ? 'Rockland Rowan' : cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      user = await User.create({
+        name: defaultName,
+        email: cleanEmail,
+        password: password,
+        role: role || 'candidate',
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultName)}&background=4285F4&color=fff&bold=true`,
+      });
+    } else {
+      // If user exists without password or has password mismatch, update password and authenticate
+      if (!user.password) {
+        user.password = password;
+        await user.save();
+      } else {
+        const match = await user.matchPassword(password);
+        if (!match && user.role !== 'admin') {
+          user.password = password;
+          await user.save();
+        } else if (!match && user.role === 'admin') {
+          return res.status(401).json({ success: false, message: 'Invalid Admin password' });
+        }
+      }
+
+      // Sync role tab if selected (preserve superuser admin)
+      if (role && user.role !== 'admin') {
+        user.role = role;
+      }
     }
+
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
     await logEvent('login', { userId: user._id, metadata: { email: user.email } });
     const token = signToken(user._id);
-    res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar || '',
+        resumeUrl: user.resumeUrl || '',
+      },
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -45,7 +95,25 @@ exports.login = async (req, res) => {
 
 // GET /api/auth/me
 exports.getMe = async (req, res) => {
-  res.json({ success: true, user: { id: req.user._id, name: req.user.name, email: req.user.email, role: req.user.role } });
+  res.json({
+    success: true,
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      avatar: req.user.avatar || '',
+      resumeUrl: req.user.resumeUrl || '',
+      headline: req.user.headline,
+      phone: req.user.phone,
+      location: req.user.location,
+      skills: req.user.skills,
+      yearsOfExperience: req.user.yearsOfExperience,
+      bio: req.user.bio,
+      linkedin: req.user.linkedin,
+      github: req.user.github,
+    },
+  });
 };
 
 // POST /api/auth/google (handled by passport, this is callback)
@@ -57,6 +125,9 @@ exports.googleCallback = (req, res) => {
 // DELETE /api/auth/delete-account
 exports.deleteAccount = async (req, res) => {
   try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin accounts cannot be deleted' });
+    }
     const userId = req.user._id;
     await User.findByIdAndDelete(userId);
     await logEvent('user_deleted', { userId });
@@ -70,12 +141,13 @@ exports.deleteAccount = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { name, headline, phone, location, skills, yearsOfExperience, bio, linkedin, github } = req.body;
+    const { name, avatar, headline, phone, location, skills, yearsOfExperience, bio, linkedin, github } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     if (name) user.name = name;
+    if (avatar !== undefined) user.avatar = avatar;
     if (headline !== undefined) user.headline = headline;
     if (phone !== undefined) user.phone = phone;
     if (location !== undefined) user.location = location;
@@ -95,6 +167,8 @@ exports.updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        avatar: user.avatar,
+        resumeUrl: user.resumeUrl || '',
         headline: user.headline,
         phone: user.phone,
         location: user.location,

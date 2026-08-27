@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import NotificationBell from '../components/NotificationBell';
+import Header from '../components/Header';
 import API from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 export default function CandidateProfile() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, updateUser } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -22,6 +22,9 @@ export default function CandidateProfile() {
   const [saving, setSaving] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
   const [uploadingResume, setUploadingResume] = useState(false);
+
+  // Resume Modal Viewer state
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -40,7 +43,8 @@ export default function CandidateProfile() {
       const { data } = await API.put('/auth/profile', payload);
       if (data.success) {
         toast.success('Profile updated successfully!');
-        if (setUser && data.user) setUser(data.user);
+        if (updateUser) updateUser(data.user);
+        else if (setUser && data.user) setUser(data.user);
       }
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to update profile');
@@ -58,12 +62,13 @@ export default function CandidateProfile() {
       const form = new FormData();
       form.append('resume', file);
 
-      const { data } = await API.post('/candidate/analyze-resume', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const { data } = await API.post('/candidate/analyze-resume', form);
 
       if (data.success) {
         toast.success('Resume file uploaded & skills updated!');
+        if (data.resumeUrl && updateUser) {
+          updateUser({ resumeUrl: data.resumeUrl });
+        }
         if (data.extractedData?.skills?.length) {
           setFormData(prev => ({
             ...prev,
@@ -73,26 +78,28 @@ export default function CandidateProfile() {
         }
       }
     } catch (err) {
-      toast.error('Resume upload failed');
+      console.error('Resume upload error:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Resume upload failed');
     } finally {
       setUploadingResume(false);
     }
   };
 
+  const resumeFullUrl = user?.resumeUrl
+    ? (user.resumeUrl.startsWith('http') ? user.resumeUrl : `http://localhost:5000${user.resumeUrl}`)
+    : '';
+
   return (
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="page-title">Job Seeker Profile & Resume</h1>
-            <p className="page-sub">Manage your personal information, skills, and default resume for 1-click job applications</p>
-          </div>
-          <NotificationBell />
-        </div>
+        <Header 
+          title="Job Seeker Profile & Resume" 
+          subtitle="Manage your personal information, skills, and view your uploaded resume" 
+        />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-          {/* Form Card */}
+          {/* Personal Information Form Card */}
           <div className="card" style={{ gridColumn: 'span 2' }}>
             <div className="card-inner">
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -192,26 +199,42 @@ export default function CandidateProfile() {
             </div>
           </div>
 
-          {/* Resume Upload Card */}
+          {/* Resume Upload & View Options Card */}
           <div className="card">
             <div className="card-inner">
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <i className="fa-solid fa-file-pdf" style={{ color: 'var(--c1, #ff2770)' }}></i> Default Resume File
               </h3>
 
-              <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.15)', textAlign: 'center', marginBottom: '1.2rem' }}>
-                <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '2rem', color: 'var(--c2, #45f3ff)', marginBottom: '0.8rem', display: 'block' }}></i>
-                <h5 style={{ color: '#fff', fontWeight: 600, fontSize: '0.92rem' }}>
-                  {resumeFile ? resumeFile.name : 'Upload Latest Resume PDF/DOCX'}
+              <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.04)', borderRadius: '14px', border: '1px dashed rgba(255,255,255,0.18)', textAlign: 'center', marginBottom: '1.2rem' }}>
+                <i className="fa-solid fa-file-invoice" style={{ fontSize: '2.4rem', color: 'var(--c2, #45f3ff)', marginBottom: '0.8rem', display: 'block' }}></i>
+                <h5 style={{ color: '#fff', fontWeight: 700, fontSize: '0.98rem' }}>
+                  {resumeFile ? resumeFile.name : (user?.resumeUrl ? 'Active Resume Attached' : 'No Resume Uploaded Yet')}
                 </h5>
-                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '4px' }}>
-                  This file will be attached when applying for jobs and stored securely in Cloudinary.
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '6px' }}>
+                  {user?.resumeUrl ? 'Your default resume is saved and attached for 1-click job applications.' : 'Upload a PDF/DOCX resume file to auto-fill job applications.'}
                 </p>
 
-                <label className="btn btn-secondary" style={{ marginTop: '1rem', cursor: 'pointer', display: 'inline-block', borderRadius: '10px' }}>
-                  {uploadingResume ? <><i className="fa-solid fa-spinner fa-spin"></i> Uploading…</> : <><i className="fa-solid fa-upload"></i> Choose Resume File</>}
-                  <input type="file" accept=".pdf,.docx" onChange={handleResumeUpload} style={{ display: 'none' }} />
-                </label>
+                {/* Resume Action Buttons */}
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+                  <label className="btn btn-secondary" style={{ cursor: 'pointer', borderRadius: '10px', fontSize: '0.85rem' }}>
+                    {uploadingResume ? <><i className="fa-solid fa-spinner fa-spin"></i> Uploading…</> : <><i className="fa-solid fa-upload"></i> {user?.resumeUrl ? 'Replace Resume' : 'Upload Resume'}</>}
+                    <input type="file" accept=".pdf,.docx" onChange={handleResumeUpload} style={{ display: 'none' }} />
+                  </label>
+
+                  {/* Direct Open Resume PDF Link */}
+                  {user?.resumeUrl && (
+                    <a
+                      href={resumeFullUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary"
+                      style={{ borderRadius: '10px', fontSize: '0.85rem', background: 'linear-gradient(135deg, #45f3ff, #0077b6)', color: '#000', fontWeight: 700 }}
+                    >
+                      <i className="fa-solid fa-file-pdf"></i> Open PDF
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Quick Preview Badges */}

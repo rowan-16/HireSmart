@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import NotificationBell from '../components/NotificationBell';
+import Header from '../components/Header';
 import API from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
@@ -111,14 +111,10 @@ export default function CandidateDashboard() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        {/* Page Top Header */}
-        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="page-title">Candidate Hub, <span>{user?.name?.split(' ')[0]}</span></h1>
-            <p className="page-sub">Explore AI-matched job opportunities and track your interviews</p>
-          </div>
-          <NotificationBell />
-        </div>
+        <Header 
+          title={`Candidate Hub, ${user?.name?.split(' ')[0] || 'User'}`} 
+          subtitle="Explore AI-matched job opportunities and track your interviews" 
+        />
 
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '1.8rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px' }}>
@@ -267,8 +263,19 @@ export default function CandidateDashboard() {
                               </p>
                             </div>
 
-                            {/* Status Pills */}
-                            <div>
+                            {/* Status & View Resume Actions */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              {app.resumeUrl && (
+                                <a
+                                  href={app.resumeUrl.startsWith('http') ? app.resumeUrl : `http://localhost:5000${app.resumeUrl}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ borderRadius: '8px', fontSize: '0.8rem' }}
+                                >
+                                  <i className="fa-solid fa-file-lines"></i> View Resume
+                                </a>
+                              )}
                               {app.status === 'applied' && (
                                 <span style={{ background: 'rgba(69, 243, 255, 0.15)', border: '1px solid var(--c2, #45f3ff)', color: 'var(--c2, #45f3ff)', padding: '6px 14px', borderRadius: '999px', fontSize: '0.82rem', fontWeight: 600 }}>
                                   <i className="fa-solid fa-clock"></i> Application Under Review

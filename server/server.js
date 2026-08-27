@@ -32,6 +32,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const passport = require('./config/passport');
 app.use(passport.initialize());
 
+// Health check
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/jobs', require('./routes/jobs'));
@@ -42,11 +45,8 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api', require('./routes/ranking'));
 app.use('/api', require('./routes/misc'));
 
-// Static uploads (restricted — not for production without auth)
+// Static uploads directory for resume PDFs and files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));

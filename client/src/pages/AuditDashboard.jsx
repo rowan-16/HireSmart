@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import API from '../services/api';
 
 const EVENT_META = {
@@ -46,10 +47,10 @@ export default function AuditDashboard() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        <div className="page-header">
-          <h1 className="page-title">Audit <span>Trail</span></h1>
-          <p className="page-sub">Complete log of all system actions — tamper-evident and searchable</p>
-        </div>
+        <Header 
+          title="Audit Trail (Admin Governance)" 
+          subtitle="Complete log of all system actions — restricted to Admin ('The Head')" 
+        />
 
         {/* Filters */}
         <div className="card" style={{ marginBottom: '1.5rem' }}>

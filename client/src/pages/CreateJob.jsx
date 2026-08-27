@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 import API from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -62,10 +63,10 @@ export default function CreateJob() {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content animate-fade">
-        <div className="page-header">
-          <h1 className="page-title">Create <span>Job Posting</span></h1>
-          <p className="page-sub">Define the role and let HireSmart extract requirements automatically</p>
-        </div>
+        <Header 
+          title="Create Job Posting" 
+          subtitle="Define the role and let HireSmart extract requirements automatically" 
+        />
 
         <form onSubmit={handleSubmit}>
           <div className="grid-2">
