@@ -59,7 +59,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
   try {
     let userEmail = passedEmail || req.query.email;
     if (!userEmail) {
-      userEmail = role === 'candidate' ? 'rocklandrowanm@gmail.com' : (role === 'admin' ? 'admin@hiresmart.ai' : 'company@hiresmart.ai');
+      userEmail = role === 'admin' ? 'admin@hiresmart.ai' : 'rocklandrowanm@gmail.com';
     }
 
     if (role === 'candidate' && userEmail === 'admin@hiresmart.ai') {
