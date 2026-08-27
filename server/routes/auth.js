@@ -13,14 +13,47 @@ router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.delete('/delete-account', protect, deleteAccount);
 
+// Dynamic helper to resolve client application base URL
+const getClientUrl = (req, stateClientOrigin = '') => {
+  if (process.env.CLIENT_URL) {
+    return process.env.CLIENT_URL.replace(/\/$/, '');
+  }
+  if (stateClientOrigin && stateClientOrigin.startsWith('http')) {
+    return stateClientOrigin.replace(/\/$/, '');
+  }
+  if (req && req.headers && req.headers.referer) {
+    try {
+      const u = new URL(req.headers.referer);
+      if (!u.pathname.startsWith('/api')) {
+        return u.origin;
+      }
+    } catch (e) {}
+  }
+  if (req && req.headers) {
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+      return `${proto}://${host}`;
+    }
+  }
+  return 'http://localhost:5173';
+};
+
 // Google OAuth Handler (Full page redirect to Google OAuth 2.0)
 router.get('/google', (req, res, next) => {
   const role = req.query.role || 'recruiter';
   const email = req.query.email || '';
   const name = req.query.name || '';
+  let clientOrigin = req.query.client_origin || '';
+  if (!clientOrigin && req.headers.referer) {
+    try {
+      const u = new URL(req.headers.referer);
+      if (!u.pathname.startsWith('/api')) clientOrigin = u.origin;
+    } catch (e) {}
+  }
 
   // Store params in state
-  const stateData = JSON.stringify({ role, email, name });
+  const stateData = JSON.stringify({ role, email, name, clientOrigin });
   const stateEncoded = Buffer.from(stateData).toString('base64');
 
   passport.authenticate('google', { scope: ['profile', 'email'], state: stateEncoded })(req, res, next);
@@ -32,6 +65,7 @@ router.get('/google/callback', (req, res, next) => {
     let role = 'recruiter';
     let passedEmail = '';
     let passedName = '';
+    let clientOrigin = '';
 
     try {
       if (req.query.state) {
@@ -39,11 +73,14 @@ router.get('/google/callback', (req, res, next) => {
         role = decoded.role || 'recruiter';
         passedEmail = decoded.email || '';
         passedName = decoded.name || '';
+        clientOrigin = decoded.clientOrigin || '';
       }
     } catch (e) {
       if (req.query.state === 'candidate') role = 'candidate';
       if (req.query.state === 'admin') role = 'admin';
     }
+
+    const clientUrl = getClientUrl(req, clientOrigin);
 
     if (err || !user) {
       try {
@@ -97,10 +134,10 @@ router.get('/google/callback', (req, res, next) => {
         await fallbackUser.save({ validateBeforeSave: false });
 
         const token = jwt.sign({ id: fallbackUser._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
-        const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/google/success?token=${token}&name=${encodeURIComponent(fallbackUser.name)}&email=${encodeURIComponent(fallbackUser.email)}&role=${fallbackUser.role}&avatar=${encodeURIComponent(fallbackUser.avatar || '')}`;
+        const redirectUrl = `${clientUrl}/auth/google/success?token=${token}&name=${encodeURIComponent(fallbackUser.name)}&email=${encodeURIComponent(fallbackUser.email)}&role=${fallbackUser.role}&avatar=${encodeURIComponent(fallbackUser.avatar || '')}`;
         return res.redirect(redirectUrl);
       } catch (fallbackErr) {
-        return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=google_failed`);
+        return res.redirect(`${clientUrl}/login?error=google_failed`);
       }
     }
 
@@ -109,7 +146,7 @@ router.get('/google/callback', (req, res, next) => {
     await logEvent('login', { userId: user._id, metadata: { email: user.email, provider: 'google_oauth' } });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
-    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/auth/google/success?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}&avatar=${encodeURIComponent(user.avatar || '')}`;
+    const redirectUrl = `${clientUrl}/auth/google/success?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}&avatar=${encodeURIComponent(user.avatar || '')}`;
     return res.redirect(redirectUrl);
   })(req, res, next);
 });

@@ -51,6 +51,9 @@ export function AuthProvider({ children }) {
     let url = `${API_BASE_URL}/auth/google?role=${role}`;
     if (email) url += `&email=${encodeURIComponent(email)}`;
     if (name) url += `&name=${encodeURIComponent(name)}`;
+    if (typeof window !== 'undefined' && window.location.origin) {
+      url += `&client_origin=${encodeURIComponent(window.location.origin)}`;
+    }
     window.location.href = url;
   }, []);
 

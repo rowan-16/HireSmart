@@ -119,7 +119,8 @@ exports.getMe = async (req, res) => {
 // POST /api/auth/google (handled by passport, this is callback)
 exports.googleCallback = (req, res) => {
   const token = signToken(req.user._id);
-  res.redirect(`${process.env.CLIENT_URL}/auth/google/success?token=${token}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}&role=${req.user.role}`);
+  const clientUrl = (process.env.CLIENT_URL || (req.headers.referer ? new URL(req.headers.referer).origin : 'http://localhost:5173')).replace(/\/$/, '');
+  res.redirect(`${clientUrl}/auth/google/success?token=${token}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}&role=${req.user.role}`);
 };
 
 // DELETE /api/auth/delete-account
