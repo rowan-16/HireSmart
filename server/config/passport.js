@@ -4,8 +4,8 @@ const User = require('../models/User');
 
 const getCallbackURL = () => {
   if (process.env.GOOGLE_CALLBACK_URL) return process.env.GOOGLE_CALLBACK_URL;
-  if (process.env.SERVER_URL) return `${process.env.SERVER_URL.replace(/\/$/, '')}/api/auth/google/callback`;
-  return '/api/auth/google/callback';
+  const serverUrl = (process.env.SERVER_URL || 'https://hiresmart-4jfl.onrender.com').replace(/\/$/, '');
+  return `${serverUrl}/api/auth/google/callback`;
 };
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {

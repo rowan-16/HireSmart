@@ -23,8 +23,8 @@ npm run dev
 
 ## Default URLs
 - Frontend: https://hire-smart-1snd8w21m-my-own18.vercel.app
-- Backend API: https://hire-smart-1snd8w21m-my-own18.vercel.app/api
-- Health check: https://hire-smart-1snd8w21m-my-own18.vercel.app/api/health
+- Backend API: https://hiresmart-4jfl.onrender.com/api
+- Health check: https://hiresmart-4jfl.onrender.com/api/health
 
 ## First Login
 Register a new account at https://hire-smart-1snd8w21m-my-own18.vercel.app/register
@@ -32,7 +32,7 @@ Register a new account at https://hire-smart-1snd8w21m-my-own18.vercel.app/regis
 ## Google OAuth Setup (Optional)
 1. Go to https://console.cloud.google.com/
 2. Create OAuth 2.0 credentials
-3. Add authorized redirect URI: https://hire-smart-1snd8w21m-my-own18.vercel.app/api/auth/google/callback
+3. Add authorized redirect URI: https://hiresmart-4jfl.onrender.com/api/auth/google/callback
 4. Add your Client ID and Secret to server/.env
 
 ## Demo Flow
@@ -57,5 +57,6 @@ JWT_SECRET=your_secret_here
 GOOGLE_CLIENT_ID=optional
 GOOGLE_CLIENT_SECRET=optional
 CLIENT_URL=https://hire-smart-1snd8w21m-my-own18.vercel.app
+SERVER_URL=https://hiresmart-4jfl.onrender.com
 PORT=5000
 ```
