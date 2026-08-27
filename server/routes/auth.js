@@ -29,9 +29,6 @@ const isGoogleOauthConfigured = () => {
 
 // Dynamic helper to resolve client application base URL
 const getClientUrl = (req, stateClientOrigin = '') => {
-  if (process.env.CLIENT_URL) {
-    return process.env.CLIENT_URL.replace(/\/$/, '');
-  }
   if (stateClientOrigin && stateClientOrigin.startsWith('http')) {
     return stateClientOrigin.replace(/\/$/, '');
   }
@@ -43,6 +40,9 @@ const getClientUrl = (req, stateClientOrigin = '') => {
       }
     } catch (e) {}
   }
+  if (process.env.CLIENT_URL && !process.env.CLIENT_URL.includes('1snd8w21m')) {
+    return process.env.CLIENT_URL.replace(/\/$/, '');
+  }
   if (req && req.headers) {
     const host = req.headers['x-forwarded-host'] || req.headers.host;
     const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
@@ -50,7 +50,7 @@ const getClientUrl = (req, stateClientOrigin = '') => {
       return `${proto}://${host}`;
     }
   }
-  return process.env.CLIENT_URL || 'https://hire-smart-1snd8w21m-my-own18.vercel.app';
+  return 'https://hire-smart-sandy.vercel.app';
 };
 
 // Helper for fallback login execution when Google OAuth credentials are not configured or fail
