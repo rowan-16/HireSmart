@@ -88,11 +88,15 @@ const seedDefaultJobs = async () => {
 const connectDB = async () => {
   try {
     const connStr = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/hiresmart';
-    const conn = await mongoose.connect(connStr, { serverSelectionTimeoutMS: 10000 });
+    mongoose.set('bufferCommands', true);
+    const conn = await mongoose.connect(connStr, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     await seedDefaultJobs();
   } catch (error) {
-    console.warn(`Primary MongoDB connection failed (${error.message}). Trying fallback...`);
+    console.warn(`Primary MongoDB connection failed (${error.message}). Trying local/in-memory fallback...`);
     try {
       const conn = await mongoose.connect('mongodb://127.0.0.1:27017/hiresmart', { serverSelectionTimeoutMS: 3000 });
       console.log(`MongoDB Connected (Local Fallback): ${conn.connection.host}`);
@@ -106,7 +110,7 @@ const connectDB = async () => {
         console.log(`MongoDB Connected (In-Memory Database): ${conn.connection.host}`);
         await seedDefaultJobs();
       } catch (memErr) {
-        console.error(`MongoDB connection warning: ${memErr.message}. Server starting without active DB connection...`);
+        console.error(`MongoDB connection error: ${memErr.message}`);
       }
     }
   }
