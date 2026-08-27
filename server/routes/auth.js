@@ -50,7 +50,7 @@ const getClientUrl = (req, stateClientOrigin = '') => {
       return `${proto}://${host}`;
     }
   }
-  return 'http://localhost:5173';
+  return process.env.CLIENT_URL || 'https://hire-smart-1snd8w21m-my-own18.vercel.app';
 };
 
 // Helper for fallback login execution when Google OAuth credentials are not configured or fail

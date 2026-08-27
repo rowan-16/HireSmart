@@ -22,17 +22,17 @@ npm run dev
 ```
 
 ## Default URLs
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:5000
-- Health check: http://localhost:5000/api/health
+- Frontend: https://hire-smart-1snd8w21m-my-own18.vercel.app
+- Backend API: https://hire-smart-1snd8w21m-my-own18.vercel.app/api
+- Health check: https://hire-smart-1snd8w21m-my-own18.vercel.app/api/health
 
 ## First Login
-Register a new account at http://localhost:5173/register
+Register a new account at https://hire-smart-1snd8w21m-my-own18.vercel.app/register
 
 ## Google OAuth Setup (Optional)
 1. Go to https://console.cloud.google.com/
 2. Create OAuth 2.0 credentials
-3. Add authorized redirect URI: http://localhost:5000/api/auth/google/callback
+3. Add authorized redirect URI: https://hire-smart-1snd8w21m-my-own18.vercel.app/api/auth/google/callback
 4. Add your Client ID and Secret to server/.env
 
 ## Demo Flow
@@ -52,10 +52,10 @@ Register a new account at http://localhost:5173/register
 
 ## Environment Variables (server/.env)
 ```
-MONGO_URI=mongodb://localhost:27017/hiresmart
+MONGO_URI=mongodb+srv://rocklandrowanm_db_user:<db_password>@cluster0.kurfy4f.mongodb.net/hiresmart?retryWrites=true&w=majority&appName=Cluster0
 JWT_SECRET=your_secret_here
 GOOGLE_CLIENT_ID=optional
 GOOGLE_CLIENT_SECRET=optional
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=https://hire-smart-1snd8w21m-my-own18.vercel.app
 PORT=5000
 ```
