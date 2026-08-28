@@ -44,12 +44,16 @@ exports.getDashboardStats = async (req, res) => {
     const Job = require('../models/Job');
     const Ranking = require('../models/Ranking');
 
+    const logQuery = req.user.role === 'admin'
+      ? {}
+      : { eventType: { $nin: ['login', 'register'] } };
+
     const [totalJobs, totalResumes, totalRankings, totalOverrides, recentLogs] = await Promise.all([
-      Job.countDocuments({ createdBy: req.user._id }),
+      Job.countDocuments(req.user.role === 'admin' ? {} : { createdBy: req.user._id }),
       Resume.countDocuments(),
       Ranking.countDocuments(),
       RecruiterOverride.countDocuments(),
-      AuditLog.find().sort('-timestamp').limit(10).populate('jobId', 'title').populate('userId', 'name'),
+      AuditLog.find(logQuery).sort('-timestamp').limit(10).populate('jobId', 'title').populate('userId', 'name'),
     ]);
 
     // Average match score

@@ -24,9 +24,9 @@ const ADMIN_NAV = [
 
 const CANDIDATE_NAV = [
   { section: 'Job Seeker Hub', items: [
-    { to: '/candidate/dashboard', icon: 'fa-sparkles', label: 'Recommended Jobs' },
-    { to: '/candidate/profile', icon: 'fa-id-card', label: 'My Resume & Profile' },
-    { to: '/candidate/interviews', icon: 'fa-video', label: 'My Interviews' },
+    { to: '/candidate/dashboard', icon: 'fa-sparkles', label: 'AI Recommended Jobs' },
+    { to: '/candidate/profile', icon: 'fa-file-lines', label: 'AI Resume Analyser' },
+    { to: '/candidate/interviews', icon: 'fa-briefcase', label: 'My Applications & Interviews' },
   ]},
 ];
 

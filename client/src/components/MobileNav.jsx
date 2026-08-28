@@ -14,9 +14,9 @@ export default function MobileNav() {
   ];
 
   const candidateNav = [
-    { to: '/candidate/dashboard', icon: 'fa-sparkles', label: 'Jobs' },
-    { to: '/candidate/profile', icon: 'fa-id-card', label: 'Profile' },
-    { to: '/candidate/interviews', icon: 'fa-video', label: 'Interviews' },
+    { to: '/candidate/dashboard', icon: 'fa-sparkles', label: 'AI Jobs' },
+    { to: '/candidate/profile', icon: 'fa-file-lines', label: 'AI Resume' },
+    { to: '/candidate/interviews', icon: 'fa-briefcase', label: 'Applications' },
   ];
 
   const adminNav = [

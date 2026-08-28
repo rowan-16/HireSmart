@@ -84,10 +84,12 @@ export default function Dashboard() {
                     {user?.role === 'admin' && <Link to="/audit" className="btn btn-secondary btn-sm">View All</Link>}
                   </div>
                   <div className="timeline">
-                    {(stats?.recentActivity || []).length === 0 ? (
+                    {((stats?.recentActivity || []).filter(log => user?.role === 'admin' || !['login', 'register'].includes(log.eventType))).length === 0 ? (
                       <p className="text-muted" style={{ fontSize: '0.88rem' }}>No activity yet. Upload resumes to get started.</p>
                     ) : (
-                      (stats?.recentActivity || []).map((log, i) => <ActivityItem key={i} log={log} />)
+                      (stats?.recentActivity || [])
+                        .filter(log => user?.role === 'admin' || !['login', 'register'].includes(log.eventType))
+                        .map((log, i) => <ActivityItem key={i} log={log} />)
                     )}
                   </div>
                 </div>
