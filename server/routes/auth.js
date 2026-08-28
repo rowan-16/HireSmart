@@ -183,6 +183,9 @@ router.get('/google/callback', (req, res, next) => {
     }
 
     try {
+      if (role && user.role !== role) {
+        user.role = role;
+      }
       user.lastLogin = new Date();
       await user.save({ validateBeforeSave: false });
       await logEvent('login', { userId: user._id, metadata: { email: user.email, provider: 'google_oauth' } });

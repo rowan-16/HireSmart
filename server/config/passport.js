@@ -18,7 +18,15 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     try {
       console.log('[Google Profile Received]:', profile ? `${profile.displayName} <${profile.emails?.[0]?.value}>` : 'NO PROFILE');
       const googleAvatar = profile.photos?.[0]?.value || profile._json?.picture || '';
-      const role = (req.query.state === 'candidate' || req.query.role === 'candidate') ? 'candidate' : 'recruiter';
+      let role = 'recruiter';
+      if (req.query.state) {
+        try {
+          const decoded = JSON.parse(Buffer.from(req.query.state, 'base64').toString('utf8'));
+          if (decoded && decoded.role) role = decoded.role;
+        } catch (e) {
+          if (req.query.state === 'candidate' || req.query.role === 'candidate') role = 'candidate';
+        }
+      }
       
       let user = await User.findOne({ googleId: profile.id });
       if (!user) {
@@ -28,6 +36,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         user = await User.findOne({ email });
         if (user) {
           user.googleId = profile.id;
+          user.role = role;
           if (googleAvatar) user.avatar = googleAvatar;
           if (profile.displayName) user.name = profile.displayName;
           await user.save({ validateBeforeSave: false });
@@ -41,6 +50,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           });
         }
       } else {
+        user.role = role;
         if (googleAvatar) user.avatar = googleAvatar;
         if (profile.displayName) user.name = profile.displayName;
         await user.save({ validateBeforeSave: false });
