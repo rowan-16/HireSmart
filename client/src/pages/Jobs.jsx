@@ -56,9 +56,9 @@ export default function Jobs() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {jobs.map(job => (
               <div key={job._id} className="card">
-                <div className="card-inner" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                  <div style={{ flex: 1 }}>
-                    <div className="flex-center gap-2 mb-1">
+                <div className="card-inner job-card-inner">
+                  <div className="job-card-main" style={{ flex: 1 }}>
+                    <div className="flex-center gap-2 mb-1" style={{ flexWrap: 'wrap' }}>
                       <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>{job.title}</h3>
                       <span className={`badge ${STATUS_BADGE[job.status]}`}>{job.status}</span>
                     </div>
@@ -70,22 +70,24 @@ export default function Jobs() {
                       {job.requiredSkills?.length > 6 && <span className="tag">+{job.requiredSkills.length - 6}</span>}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end', minWidth: 160 }}>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
-                      <i className="fa-solid fa-users" style={{ color: 'var(--c2)' }}></i> {job.candidateCount || 0} candidates
+                  <div className="job-card-actions">
+                    <div className="job-card-meta">
+                      <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                        <i className="fa-solid fa-users" style={{ color: 'var(--c2)' }}></i> {job.candidateCount || 0} candidates
+                      </span>
+                      <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                        {job.minExperience > 0 ? `${job.minExperience}+ yrs exp` : 'Any experience'}
+                      </span>
                     </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
-                      {job.minExperience > 0 ? `${job.minExperience}+ yrs exp` : 'Any experience'}
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                      <Link to={`/jobs/applications?jobId=${job._id}`} className="btn btn-sm btn-primary">
+                    <div className="job-card-buttons">
+                      <Link to={`/jobs/applications?jobId=${job._id}`} className="btn btn-sm btn-primary" style={{ justifyContent: 'center' }}>
                         <i className="fa-solid fa-ranking-star"></i> Rank Resumes
                       </Link>
                       <button
                         type="button"
                         onClick={() => handleDeleteJob(job._id, job.title)}
                         className="btn btn-sm"
-                        style={{ background: 'rgba(255, 39, 112, 0.15)', color: '#ff2770', border: '1px solid rgba(255, 39, 112, 0.3)', borderRadius: '8px' }}
+                        style={{ background: 'rgba(255, 39, 112, 0.15)', color: '#ff2770', border: '1px solid rgba(255, 39, 112, 0.3)', borderRadius: '8px', justifyContent: 'center' }}
                         title="Delete Job Posting"
                       >
                         <i className="fa-solid fa-trash"></i> Delete
