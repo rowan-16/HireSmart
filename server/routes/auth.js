@@ -61,25 +61,19 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
     if (!userEmail) {
       if (role === 'admin') {
         userEmail = 'admin@hiresmart.ai';
-      } else if (role === 'recruiter') {
-        userEmail = 'company@hiresmart.ai';
       } else {
-        userEmail = 'rocklandrowanm@gmail.com';
+        userEmail = 'jowanm1234@gmail.com';
       }
-    }
-
-    if (role === 'candidate' && userEmail === 'admin@hiresmart.ai') {
-      userEmail = 'rocklandrowanm@gmail.com';
     }
 
     let userName = passedName || req.query.name;
     if (!userName) {
-      if (userEmail.includes('rocklandrowan')) {
+      if (userEmail.includes('jowanm')) {
+        userName = 'jowan m';
+      } else if (userEmail.includes('rocklandrowan')) {
         userName = 'Rockland Rowan';
       } else if (userEmail.includes('admin')) {
         userName = 'Admin Head';
-      } else if (userEmail.includes('company')) {
-        userName = 'Company Recruiter';
       } else {
         const prefix = userEmail.split('@')[0];
         userName = prefix.replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
