@@ -37,11 +37,7 @@ const seedDefaultJobs = async () => {
       await candidateUser.save({ validateBeforeSave: false });
     }
 
-    // Clear all jobs and applications as requested
-    await Job.deleteMany({});
-    const Application = require('../models/Application');
-    await Application.deleteMany({});
-    console.log('🧹 Cleaned up all jobs and applications from database.');
+
 
     const AuditLog = require('../models/AuditLog');
     const auditCount = await AuditLog.countDocuments();
