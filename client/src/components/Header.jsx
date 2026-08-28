@@ -67,11 +67,11 @@ export default function Header({ title, subtitle }) {
       paddingBottom: '1rem',
       borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="header-title-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button className="mobile-menu-toggle" onClick={toggleMobileSidebar} aria-label="Toggle menu">
           <i className="fa-solid fa-bars"></i>
         </button>
-        <div>
+        <div className="header-text-box">
           {title ? (
             <h1 className="page-title" style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>
               {title}
@@ -85,7 +85,7 @@ export default function Header({ title, subtitle }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+      <div className="header-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         {/* Notification Bell */}
         <NotificationBell />
 

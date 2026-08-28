@@ -416,6 +416,34 @@ tbody td { padding: 0.9rem 1.25rem; vertical-align: middle; }
     box-sizing: border-box;
     overflow-x: hidden;
   }
+  .main-header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+  .header-title-container {
+    width: 100% !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  .header-text-box {
+    flex: 1 !important;
+  }
+  .header-right-controls {
+    gap: 0.5rem !important;
+  }
+  .jobs-header-actions {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+  }
+  .jobs-header-actions .btn {
+    padding: 0.45rem 0.9rem !important;
+    font-size: 0.82rem !important;
+  }
   .stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;

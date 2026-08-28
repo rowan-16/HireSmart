@@ -36,7 +36,7 @@ export default function Jobs() {
       <main className="main-content animate-fade">
         <Header title="Job Postings & Rankings" subtitle="Manage recruitment positions and view automated AI resume rankings" />
 
-        <div className="flex-between mb-3" style={{ marginTop: '-0.5rem' }}>
+        <div className="flex-between mb-3 jobs-header-actions" style={{ marginTop: '-0.5rem' }}>
           <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--muted)' }}>
             Showing {jobs.length} active positions
           </div>
