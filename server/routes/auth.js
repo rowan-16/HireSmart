@@ -104,7 +104,11 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         fallbackUser.name = 'Admin Head';
       } else {
         fallbackUser.role = role;
-        if (passedName) fallbackUser.name = passedName;
+        if (passedName) {
+          fallbackUser.name = passedName;
+        } else if (fallbackUser.name === 'Company Recruiter' || fallbackUser.name === 'Company') {
+          fallbackUser.name = userName;
+        }
       }
       if (!fallbackUser.avatar) fallbackUser.avatar = userAvatar;
     }

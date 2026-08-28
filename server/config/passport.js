@@ -39,7 +39,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         user.googleId = profile.id;
         user.role = role;
         if (googleAvatar) user.avatar = googleAvatar;
-        if (profile.displayName && !user.name) user.name = profile.displayName;
+        if (profile.displayName) user.name = profile.displayName;
         user.lastLogin = new Date();
         await user.save({ validateBeforeSave: false });
       } else {
