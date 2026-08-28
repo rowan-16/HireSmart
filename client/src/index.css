@@ -431,8 +431,16 @@ tbody td { padding: 0.9rem 1.25rem; vertical-align: middle; }
   .page-title {
     font-size: 1.25rem !important;
   }
-  .page-sub {
-    font-size: 0.76rem !important;
+  .notification-dropdown {
+    position: fixed !important;
+    top: 70px !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+    max-width: 420px !important;
+    margin: 0 auto !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85) !important;
+    z-index: 10005 !important;
   }
   .mobile-bottom-nav {
     display: flex;
