@@ -159,21 +159,13 @@ export default function RecruiterApplications() {
 
         {/* Job Filter Selector & Auto-Rank Button */}
         {jobs.length > 0 && (
-          <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <label style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Select Job Posting:</label>
+          <div className="job-selector-bar">
+            <div className="job-selector-group">
+              <label className="job-selector-label">Select Job Posting:</label>
               <select
+                className="job-selector-select"
                 value={selectedJobId}
                 onChange={e => setSelectedJobId(e.target.value)}
-                style={{
-                  padding: '10px 16px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  borderRadius: '10px',
-                  color: '#fff',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                }}
               >
                 {jobs.map(j => (
                   <option key={j._id} value={j._id} style={{ background: '#1a1a2e', color: '#fff' }}>
@@ -186,13 +178,7 @@ export default function RecruiterApplications() {
             <button
               onClick={handleRankResumes}
               disabled={rankingInProgress || applications.length === 0}
-              className="btn btn-primary"
-              style={{
-                background: 'linear-gradient(135deg, #45f3ff, #8a5cff)',
-                color: '#000',
-                fontWeight: 700,
-                boxShadow: '0 4px 15px rgba(69, 243, 255, 0.3)',
-              }}
+              className="btn btn-primary job-selector-btn"
             >
               {rankingInProgress ? (
                 <><i className="fa-solid fa-spinner fa-spin"></i> Ranking Resumes…</>

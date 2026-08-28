@@ -366,6 +366,48 @@ tbody td { padding: 0.9rem 1.25rem; vertical-align: middle; }
 .job-card-meta { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-end; }
 .job-card-buttons { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
 
+/* ── Job Selector Bar ── */
+.job-selector-bar {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.job-selector-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 280px;
+}
+.job-selector-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.job-selector-select {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex: 1;
+  max-width: 420px;
+  outline: none;
+  cursor: pointer;
+}
+.job-selector-btn {
+  background: linear-gradient(135deg, #45f3ff, #8a5cff) !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 15px rgba(69, 243, 255, 0.3) !important;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   html, body {
@@ -380,6 +422,32 @@ tbody td { padding: 0.9rem 1.25rem; vertical-align: middle; }
   }
   input, select, textarea {
     font-size: 16px !important; /* Prevents auto-zoom on mobile browsers */
+  }
+  .job-selector-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .job-selector-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+  .job-selector-label {
+    font-size: 0.82rem !important;
+  }
+  .job-selector-select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+  }
+  .job-selector-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
   .mobile-menu-toggle {
     display: flex;
