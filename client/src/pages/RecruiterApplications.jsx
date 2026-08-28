@@ -37,7 +37,8 @@ export default function RecruiterApplications() {
       .then(r => {
         if (r.data.success && r.data.jobs?.length) {
           setJobs(r.data.jobs);
-          const initialId = queryJobId || r.data.jobs[0]._id;
+          const jobWithApplicants = r.data.jobs.find(j => j.candidateCount > 0);
+          const initialId = queryJobId || (jobWithApplicants ? jobWithApplicants._id : r.data.jobs[0]._id);
           setSelectedJobId(initialId);
         } else {
           setJobs([]);
