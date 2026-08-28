@@ -416,8 +416,25 @@ tbody td { padding: 0.9rem 1.25rem; vertical-align: middle; }
     overflow-x: hidden;
   }
   .stats-grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .stat-card {
+    padding: 1rem 0.85rem !important;
+    border-radius: 12px !important;
+  }
+  .stat-icon {
+    font-size: 1.4rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+  .stat-value {
+    font-size: 1.5rem !important;
+  }
+  .stat-label {
+    font-size: 0.76rem !important;
+  }
+  .stat-sub {
+    font-size: 0.7rem !important;
   }
   .table-container {
     overflow-x: auto;
