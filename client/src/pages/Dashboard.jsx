@@ -75,56 +75,87 @@ export default function Dashboard() {
               <StatCard icon="fa-person-military-pointing" label="Human Overrides" value={stats?.stats?.totalOverrides ?? 0} accent="var(--c3)" sub="Recruiter decisions logged" />
             </div>
 
-            <div className="grid-2" style={{ gap: '1.5rem' }}>
-              {/* Recent Activity */}
-              <div className="card">
-                <div className="card-inner">
-                  <div className="flex-between mb-2">
-                    <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Recent Activity</h3>
-                    {user?.role === 'admin' && <Link to="/audit" className="btn btn-secondary btn-sm">View All</Link>}
-                  </div>
-                  <div className="timeline">
-                    {((stats?.recentActivity || []).filter(log => user?.role === 'admin' || !['login', 'register'].includes(log.eventType))).length === 0 ? (
-                      <p className="text-muted" style={{ fontSize: '0.88rem' }}>No activity yet. Upload resumes to get started.</p>
-                    ) : (
-                      (stats?.recentActivity || [])
-                        .filter(log => user?.role === 'admin' || !['login', 'register'].includes(log.eventType))
-                        .map((log, i) => <ActivityItem key={i} log={log} />)
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {user?.role === 'admin' ? (
+              <div className="grid-2" style={{ gap: '1.5rem' }}>
+                {/* Recent Activity (Admin Only) */}
                 <div className="card">
                   <div className="card-inner">
-                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Quick Actions</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      <Link to="/jobs/create" className="btn btn-primary"><i className="fa-solid fa-plus"></i> Create New Job</Link>
-                      <Link to="/jobs" className="btn btn-secondary"><i className="fa-solid fa-briefcase"></i> View All Jobs</Link>
-                      {user?.role === 'admin' && (
-                        <Link to="/audit" className="btn btn-secondary"><i className="fa-solid fa-clock-rotate-left"></i> Audit Trail</Link>
+                    <div className="flex-between mb-2">
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>System Activity Log</h3>
+                      <Link to="/audit" className="btn btn-secondary btn-sm">View Full Audit</Link>
+                    </div>
+                    <div className="timeline">
+                      {(stats?.recentActivity || []).length === 0 ? (
+                        <p className="text-muted" style={{ fontSize: '0.88rem' }}>No system activity recorded yet.</p>
+                      ) : (
+                        (stats?.recentActivity || []).map((log, i) => <ActivityItem key={i} log={log} />)
                       )}
                     </div>
                   </div>
                 </div>
-                <div className="card" style={{ '--accent': 'var(--success)' }}>
-                  <div className="card-inner">
-                    <div className="fairness-indicator pass">
-                      <i className="fa-solid fa-shield-halved" style={{ fontSize: '1.5rem', color: 'var(--success)' }}></i>
-                      <div>
-                        <div style={{ fontWeight: 700, color: 'var(--success)' }}>Fairness Status: Active</div>
-                        <div style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '0.2rem' }}>Protected attributes excluded from all rankings</div>
+
+                {/* Quick Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="card">
+                    <div className="card-inner">
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Admin Quick Actions</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <Link to="/jobs/create" className="btn btn-primary"><i className="fa-solid fa-plus"></i> Create New Job</Link>
+                        <Link to="/jobs" className="btn btn-secondary"><i className="fa-solid fa-briefcase"></i> View All Jobs</Link>
+                        <Link to="/audit" className="btn btn-secondary"><i className="fa-solid fa-clock-rotate-left"></i> Full System Audit Trail</Link>
                       </div>
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '1rem' }}>
-                      Our system is designed to reduce demographic bias. All PII is removed before scoring. This does not claim to eliminate bias entirely.
-                    </p>
+                  </div>
+                  <div className="card" style={{ '--accent': 'var(--success)' }}>
+                    <div className="card-inner">
+                      <div className="fairness-indicator pass">
+                        <i className="fa-solid fa-shield-halved" style={{ fontSize: '1.5rem', color: 'var(--success)' }}></i>
+                        <div>
+                          <div style={{ fontWeight: 700, color: 'var(--success)' }}>Fairness Audit: Active</div>
+                          <div style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '0.2rem' }}>PII anonymization & 80% disparity checks active</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* Company / Recruiter View - Clean Management Workspace */
+              <div className="grid-2" style={{ gap: '1.5rem' }}>
+                <div className="card">
+                  <div className="card-inner">
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <i className="fa-solid fa-rocket" style={{ color: 'var(--c2, #45f3ff)' }}></i> Quick Recruitment Actions
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                      <Link to="/jobs/create" className="btn btn-primary" style={{ padding: '1rem', justifyContent: 'center', fontSize: '0.95rem' }}>
+                        <i className="fa-solid fa-plus-circle"></i> Create New Job Posting
+                      </Link>
+                      <Link to="/jobs" className="btn btn-secondary" style={{ padding: '1rem', justifyContent: 'center', fontSize: '0.95rem' }}>
+                        <i className="fa-solid fa-briefcase"></i> View Active Job Postings
+                      </Link>
+                      <Link to="/jobs/applications" className="btn btn-secondary" style={{ padding: '1rem', justifyContent: 'center', fontSize: '0.95rem', gridColumn: '1 / -1' }}>
+                        <i className="fa-solid fa-users"></i> Review Candidate Applications & Rankings
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card" style={{ '--accent': 'var(--success)' }}>
+                  <div className="card-inner">
+                    <div className="fairness-indicator pass" style={{ padding: '1.25rem' }}>
+                      <i className="fa-solid fa-shield-halved" style={{ fontSize: '2rem', color: 'var(--success)' }}></i>
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--success)', fontSize: '1rem' }}>Fair AI Hiring Shield Active</div>
+                        <div style={{ fontSize: '0.84rem', color: 'var(--muted)', marginTop: '0.3rem', lineHeight: '1.5' }}>
+                          Candidate personal identifiers (name, gender, age, photo) are automatically anonymized prior to AI match scoring to enforce unbiased recruitment.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

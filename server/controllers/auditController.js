@@ -49,7 +49,7 @@ exports.getDashboardStats = async (req, res) => {
       : { eventType: { $nin: ['login', 'register'] } };
 
     const [totalJobs, totalResumes, totalRankings, totalOverrides, recentLogs] = await Promise.all([
-      Job.countDocuments(req.user.role === 'admin' ? {} : { createdBy: req.user._id }),
+      Job.countDocuments({}),
       Resume.countDocuments(),
       Ranking.countDocuments(),
       RecruiterOverride.countDocuments(),
@@ -61,7 +61,7 @@ exports.getDashboardStats = async (req, res) => {
     const avgMatch = avgResult.length ? Math.round(avgResult[0].avgScore * 10) / 10 : 0;
 
     // Active jobs
-    const activeJobs = await Job.countDocuments({ createdBy: req.user._id, status: 'active' });
+    const activeJobs = await Job.countDocuments({ status: 'active' });
 
     res.json({
       success: true,

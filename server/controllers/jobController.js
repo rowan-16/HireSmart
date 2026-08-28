@@ -68,8 +68,7 @@ exports.createJob = async (req, res) => {
 // GET /api/jobs
 exports.getJobs = async (req, res) => {
   try {
-    const filter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
-    const rawJobs = await Job.find(filter).sort('-createdAt');
+    const rawJobs = await Job.find({}).sort('-createdAt');
 
     const Application = require('../models/Application');
     const jobs = await Promise.all(rawJobs.map(async (j) => {
