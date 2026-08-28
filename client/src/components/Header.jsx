@@ -54,8 +54,12 @@ export default function Header({ title, subtitle }) {
   const userInitial = user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U';
   const avatarUrl = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=4285F4&color=fff&size=128&bold=true`;
 
+  const toggleMobileSidebar = () => {
+    document.body.classList.toggle('sidebar-open');
+  };
+
   return (
-    <header style={{
+    <header className="main-header" style={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -63,17 +67,22 @@ export default function Header({ title, subtitle }) {
       paddingBottom: '1rem',
       borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
     }}>
-      <div>
-        {title ? (
-          <h1 className="page-title" style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>
-            {title}
-          </h1>
-        ) : (
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)' }}>
-            Hire<span style={{ color: 'var(--c2, #45f3ff)' }}>Smart</span>
-          </div>
-        )}
-        {subtitle && <p className="page-sub" style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--muted)' }}>{subtitle}</p>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button className="mobile-menu-toggle" onClick={toggleMobileSidebar} aria-label="Toggle menu">
+          <i className="fa-solid fa-bars"></i>
+        </button>
+        <div>
+          {title ? (
+            <h1 className="page-title" style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>
+              {title}
+            </h1>
+          ) : (
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)' }}>
+              Hire<span style={{ color: 'var(--c2, #45f3ff)' }}>Smart</span>
+            </div>
+          )}
+          {subtitle && <p className="page-sub" style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--muted)' }}>{subtitle}</p>}
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>

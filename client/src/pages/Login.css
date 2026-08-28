@@ -147,6 +147,28 @@
 
 @media (prefers-reduced-motion: reduce) { .rings, .blob-a, .blob-b, .blob-c, .beam, .heart { animation: none; } }
 
+@media (max-width: 480px) {
+  .holo-card {
+    padding: 1.5rem 1.25rem !important;
+    max-width: 92vw !important;
+    margin: 1rem auto !important;
+  }
+  .holo-header h1 {
+    font-size: 1.5rem !important;
+  }
+  .role-switch-container {
+    padding: 3px !important;
+  }
+  .role-tab {
+    padding: 8px 10px !important;
+    font-size: 0.78rem !important;
+  }
+  .themes {
+    bottom: 10px;
+    padding: 6px 10px;
+  }
+}
+
 /* Role Tabs Switcher */
 .role-tabs {
   display: flex;

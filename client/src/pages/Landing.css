@@ -75,9 +75,20 @@
 .land-footer { padding: 2rem 4rem; border-top: 1px solid rgba(255,255,255,0.06); text-align: center; }
 
 @media (max-width: 768px) {
-  .land-nav { padding: 1rem 1.5rem; flex-wrap: wrap; }
+  .land-nav { padding: 1rem; flex-wrap: wrap; justify-content: space-between; }
   .land-nav-links { display: none; }
-  .land-section { padding: 3rem 1.5rem; }
-  .land-section-alt { padding: 3rem 1.5rem; }
-  .hero-stats { gap: 1.5rem; }
+  .land-section { padding: 3rem 1.25rem; }
+  .land-section-alt { padding: 3rem 1.25rem; }
+  .land-hero h1 { font-size: 2.2rem !important; }
+  .hero-stats { gap: 1rem; flex-direction: column; align-items: center; }
+  .privacy-card { padding: 1.5rem !important; }
+  .land-cta-section { padding: 3rem 1.25rem; }
+  .land-cta-section h2 { font-size: 1.6rem !important; }
+  .land-footer { padding: 1.5rem 1rem; }
+}
+
+@media (max-width: 480px) {
+  .land-hero h1 { font-size: 1.8rem !important; }
+  .hero-ctas { flex-direction: column; width: 100%; gap: 10px; }
+  .land-btn-hero, .land-btn-secondary { width: 100%; justify-content: center; text-align: center; }
 }

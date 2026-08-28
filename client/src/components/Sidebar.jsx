@@ -52,33 +52,46 @@ export default function Sidebar() {
     ? CANDIDATE_NAV 
     : (user?.role === 'admin' ? ADMIN_NAV : RECRUITER_NAV);
 
-  return (
-    <aside className="sidebar">
-      <div className="sidebar-logo">
-        <div className="logo-icon"><i className="fa-solid fa-brain"></i></div>
-        <div>
-          <div className="logo-text">Hire<span>Smart</span></div>
-          <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>Fair AI Recruiting</div>
-        </div>
-      </div>
+  const closeMobileSidebar = () => {
+    document.body.classList.remove('sidebar-open');
+  };
 
-      <nav className="sidebar-nav">
-        {currentNav.map(section => (
-          <div key={section.section}>
-            <div className="nav-section">{section.section}</div>
-            {section.items.map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-              >
-                <i className={`fa-solid ${item.icon}`}></i>
-                {item.label}
-              </NavLink>
-            ))}
+  return (
+    <>
+      <div className="sidebar-backdrop" onClick={closeMobileSidebar}></div>
+      <aside className="sidebar">
+        <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="logo-icon"><i className="fa-solid fa-brain"></i></div>
+            <div>
+              <div className="logo-text">Hire<span>Smart</span></div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>Fair AI Recruiting</div>
+            </div>
           </div>
-        ))}
-      </nav>
-    </aside>
+          <button className="sidebar-close-btn" onClick={closeMobileSidebar}>
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <nav className="sidebar-nav">
+          {currentNav.map(section => (
+            <div key={section.section}>
+              <div className="nav-section">{section.section}</div>
+              {section.items.map(item => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={closeMobileSidebar}
+                  className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                >
+                  <i className={`fa-solid ${item.icon}`}></i>
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }
