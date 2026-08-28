@@ -215,12 +215,24 @@ export default function CandidateProfile() {
                   {user?.resumeUrl ? 'Your default resume is saved and attached for 1-click job applications.' : 'Upload a PDF/DOCX resume file to auto-fill job applications.'}
                 </p>
 
-                  {/* AI Resume Analyser Action Buttons */}
+                  {/* Action Buttons: Replace Resume, View PDF, AI Resume Analyser */}
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
                     <label className="btn btn-secondary" style={{ cursor: 'pointer', borderRadius: '10px', fontSize: '0.85rem' }}>
                       {uploadingResume ? <><i className="fa-solid fa-spinner fa-spin"></i> Uploading…</> : <><i className="fa-solid fa-upload"></i> {user?.resumeUrl ? 'Replace Resume' : 'Upload Resume'}</>}
                       <input type="file" accept=".pdf,.docx" onChange={handleResumeUpload} style={{ display: 'none' }} />
                     </label>
+
+                    {user?.resumeUrl && (
+                      <a
+                        href={resumeFullUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-primary"
+                        style={{ borderRadius: '10px', fontSize: '0.85rem', background: 'linear-gradient(135deg, #ff2770, #ff5e62)', color: '#fff', fontWeight: 700 }}
+                      >
+                        <i className="fa-solid fa-file-pdf"></i> View PDF
+                      </a>
+                    )}
 
                     <button
                       type="button"
