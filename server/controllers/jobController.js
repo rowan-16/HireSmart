@@ -118,3 +118,22 @@ exports.extractRequirements = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// DELETE /api/jobs/:id
+exports.deleteJob = async (req, res) => {
+  try {
+    const job = await Job.findByIdAndDelete(req.params.id);
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
+    
+    // Also cleanup associated applications and rankings
+    const Application = require('../models/Application');
+    const Ranking = require('../models/Ranking');
+    await Application.deleteMany({ jobId: req.params.id });
+    await Ranking.deleteMany({ jobId: req.params.id });
+
+    await logEvent('job_deleted', { jobId: req.params.id, userId: req.user._id });
+    res.json({ success: true, message: 'Job deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

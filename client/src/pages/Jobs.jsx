@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import API from '../services/api';
+import toast from 'react-hot-toast';
 
 const STATUS_BADGE = { active: 'badge-success', closed: 'badge-danger', draft: 'badge-muted' };
 
@@ -13,6 +14,21 @@ export default function Jobs() {
   useEffect(() => {
     API.get('/jobs').then(r => setJobs(r.data.jobs || [])).catch(console.error).finally(() => setLoading(false));
   }, []);
+
+  const handleDeleteJob = async (jobId, jobTitle) => {
+    if (!window.confirm(`Are you sure you want to delete "${jobTitle}"? This will also remove associated candidate rankings for this job.`)) {
+      return;
+    }
+    try {
+      const { data } = await API.delete(`/jobs/${jobId}`);
+      if (data.success) {
+        toast.success(`Job "${jobTitle}" deleted successfully`);
+        setJobs(prev => prev.filter(j => j._id !== jobId));
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete job posting');
+    }
+  };
 
   return (
     <div className="app-layout">
@@ -65,6 +81,15 @@ export default function Jobs() {
                       <Link to={`/jobs/applications?jobId=${job._id}`} className="btn btn-sm btn-primary">
                         <i className="fa-solid fa-ranking-star"></i> Rank Resumes
                       </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteJob(job._id, job.title)}
+                        className="btn btn-sm"
+                        style={{ background: 'rgba(255, 39, 112, 0.15)', color: '#ff2770', border: '1px solid rgba(255, 39, 112, 0.3)', borderRadius: '8px' }}
+                        title="Delete Job Posting"
+                      >
+                        <i className="fa-solid fa-trash"></i> Delete
+                      </button>
                     </div>
                   </div>
                 </div>
