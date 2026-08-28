@@ -10,6 +10,7 @@ exports.analyzeResume = async (req, res) => {
 
     // If file uploaded via multer
     if (req.file) {
+      const fs = require('fs');
       const ext = req.file.originalname.split('.').pop().toLowerCase();
       const parsed = await parseResume(req.file.path, ext);
       if (parsed && parsed.trim().length > 0) {
@@ -17,7 +18,13 @@ exports.analyzeResume = async (req, res) => {
       } else {
         rawText = `${req.user.name} Candidate Resume (${req.file.originalname}). Skills: JavaScript, React, Node.js, Python, SQL, Git, Problem Solving, Communication. 3 years experience.`;
       }
-      // Save resume URL on user record
+      // Save resume URL & base64 buffer on user record
+      try {
+        const fileBuffer = fs.readFileSync(req.file.path);
+        req.user.resumeData = fileBuffer.toString('base64');
+      } catch (fErr) {
+        console.warn('Failed to read resume file buffer:', fErr.message);
+      }
       req.user.resumeUrl = `/uploads/${req.file.filename}`;
       await req.user.save({ validateBeforeSave: false });
     }

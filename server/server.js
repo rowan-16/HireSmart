@@ -61,12 +61,38 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(uploadsDir));
 
 // Fallback handler for resume files uploaded in previous ephemeral sessions
-app.get('/uploads/:filename', (req, res) => {
+app.get('/uploads/:filename', async (req, res) => {
   const filePath = path.join(uploadsDir, req.params.filename);
   if (fs.existsSync(filePath)) {
     return res.sendFile(filePath);
   }
-  const clientUrl = process.env.CLIENT_URL || 'https://hire-smart-sandy.vercel.app';
+
+  // Check MongoDB Atlas for persisted PDF base64 buffer
+  try {
+    const User = require('./models/User');
+    const Resume = require('./models/Resume');
+
+    const [userDoc, resumeDoc] = await Promise.all([
+      User.findOne({ resumeUrl: { $regex: req.params.filename } }),
+      Resume.findOne({ filePath: { $regex: req.params.filename } }),
+    ]);
+
+    const base64Data = userDoc?.resumeData || resumeDoc?.resumeData;
+    if (base64Data) {
+      const pdfBuffer = Buffer.from(base64Data, 'base64');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${req.params.filename}"`);
+      return res.send(pdfBuffer);
+    }
+  } catch (dbErr) {
+    console.warn('Failed to retrieve resume PDF from MongoDB:', dbErr.message);
+  }
+
+  let clientUrl = process.env.CLIENT_URL || 'https://hire-smart-sandy.vercel.app';
+  if (!clientUrl || clientUrl.includes('1snd8w21m')) {
+    clientUrl = 'https://hire-smart-sandy.vercel.app';
+  }
+  
   res.status(200).send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -90,7 +116,7 @@ app.get('/uploads/:filename', (req, res) => {
           <div class="icon">📄</div>
           <h2>Resume Document Analysis</h2>
           <p>The candidate resume <span class="filename">${req.params.filename}</span> has been parsed and scored by HireSmart AI.</p>
-          <p style="font-size: 13px; color: #64748b;">Note: Uploaded PDF binaries on cloud instances reset periodically. Upload a new resume under <strong>Jobs &rarr; Upload Resumes</strong> to view live files.</p>
+          <p style="font-size: 13px; color: #64748b;">Upload a new resume under <strong>My Resume & Profile</strong> to view live PDF files.</p>
           <a href="${clientUrl}" class="btn">Return to HireSmart Platform</a>
         </div>
       </body>

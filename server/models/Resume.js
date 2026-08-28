@@ -24,6 +24,7 @@ const resumeSchema = new mongoose.Schema({
     default: 'uploaded',
   },
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  resumeData: { type: String, default: '' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Resume', resumeSchema);

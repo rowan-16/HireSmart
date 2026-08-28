@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
   linkedin: { type: String, default: '' },
   github: { type: String, default: '' },
   resumeUrl: { type: String, default: '' },
+  resumeData: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
   lastLogin: { type: Date },
 }, { timestamps: true });
