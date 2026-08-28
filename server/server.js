@@ -108,6 +108,23 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => console.log(`\n🚀 HireSmart Server running on port ${PORT}\n`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 HireSmart Server running on port ${PORT}\n`);
+  
+  // Automated self-ping keep-alive for Render free tier
+  const https = require('https');
+  const http = require('http');
+  const serverUrl = process.env.SERVER_URL || 'https://hiresmart-4jfl.onrender.com';
+  
+  setInterval(() => {
+    const healthUrl = `${serverUrl.replace(/\/$/, '')}/api/health`;
+    const client = healthUrl.startsWith('https') ? https : http;
+    client.get(healthUrl, (res) => {
+      console.log(`[Keep-Alive] Pinged ${healthUrl} - Status: ${res.statusCode}`);
+    }).on('error', (err) => {
+      console.warn(`[Keep-Alive Warning]: ${err.message}`);
+    });
+  }, 10 * 60 * 1000); // Ping every 10 minutes
+});
 
 module.exports = app;
