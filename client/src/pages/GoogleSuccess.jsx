@@ -26,10 +26,13 @@ export default function GoogleSuccess() {
         }, '*');
         window.close();
       } else {
-        loginFromToken(token, userData);
-        toast.success(`Welcome, ${name}!`);
-        const targetPath = role === 'candidate' ? '/candidate/dashboard' : '/dashboard';
-        navigate(targetPath, { replace: true });
+        loginFromToken(token, userData).then(freshUser => {
+          const finalUser = freshUser || userData;
+          toast.success(`Welcome, ${finalUser.name || name || 'User'}!`);
+          const targetRole = finalUser.role || role;
+          const targetPath = targetRole === 'candidate' ? '/candidate/dashboard' : '/dashboard';
+          navigate(targetPath, { replace: true });
+        });
       }
     } else {
       toast.error('Google login failed');

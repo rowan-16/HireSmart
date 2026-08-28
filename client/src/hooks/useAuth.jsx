@@ -57,10 +57,23 @@ export function AuthProvider({ children }) {
     window.location.href = url;
   }, []);
 
-  const loginFromToken = useCallback((token, userData) => {
+  const loginFromToken = useCallback(async (token, userData) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    }
+    try {
+      const { data } = await API.get('/auth/me');
+      if (data.success && data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+        return data.user;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch /auth/me:', e);
+    }
+    return userData;
   }, []);
 
   const logout = useCallback(() => {
