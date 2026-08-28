@@ -57,7 +57,7 @@ const getClientUrl = (req, stateClientOrigin = '') => {
 const executeFallbackLogin = async (req, res, role, passedEmail, passedName, clientOrigin) => {
   const clientUrl = getClientUrl(req, clientOrigin);
   try {
-    let userEmail = passedEmail || req.query.email;
+    let userEmail = (passedEmail || req.query.email || '').toLowerCase().trim();
     if (!userEmail) {
       if (role === 'admin') {
         userEmail = 'admin@hiresmart.ai';
@@ -74,11 +74,11 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
 
     let userName = passedName || req.query.name;
     if (!userName) {
-      if (userEmail.toLowerCase().includes('rocklandrowan')) {
+      if (userEmail.includes('rocklandrowan')) {
         userName = 'Rockland Rowan';
-      } else if (userEmail.toLowerCase().includes('admin')) {
+      } else if (userEmail.includes('admin')) {
         userName = 'Admin Head';
-      } else if (userEmail.toLowerCase().includes('company')) {
+      } else if (userEmail.includes('company')) {
         userName = 'Company Recruiter';
       } else {
         const prefix = userEmail.split('@')[0];

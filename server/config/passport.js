@@ -28,32 +28,29 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         }
       }
       
-      let user = await User.findOne({ googleId: profile.id });
-      if (!user) {
-        const email = profile.emails?.[0]?.value;
-        if (!email) return done(new Error('No email found in Google profile'), null);
+      const email = profile.emails?.[0]?.value?.toLowerCase()?.trim();
+      if (!email) return done(new Error('No email found in Google profile'), null);
 
-        user = await User.findOne({ email });
-        if (user) {
-          user.googleId = profile.id;
-          user.role = role;
-          if (googleAvatar) user.avatar = googleAvatar;
-          if (profile.displayName) user.name = profile.displayName;
-          await user.save({ validateBeforeSave: false });
-        } else {
-          user = await User.create({
-            name: profile.displayName || email.split('@')[0],
-            email: email,
-            googleId: profile.id,
-            avatar: googleAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.displayName || email)}&background=4285F4&color=fff&bold=true`,
-            role,
-          });
-        }
-      } else {
+      let user = await User.findOne({
+        $or: [{ googleId: profile.id }, { email }]
+      });
+
+      if (user) {
+        user.googleId = profile.id;
         user.role = role;
         if (googleAvatar) user.avatar = googleAvatar;
-        if (profile.displayName) user.name = profile.displayName;
+        if (profile.displayName && !user.name) user.name = profile.displayName;
+        user.lastLogin = new Date();
         await user.save({ validateBeforeSave: false });
+      } else {
+        user = await User.create({
+          name: profile.displayName || email.split('@')[0],
+          email: email,
+          googleId: profile.id,
+          avatar: googleAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.displayName || email)}&background=4285F4&color=fff&bold=true`,
+          role,
+          lastLogin: new Date(),
+        });
       }
       return done(null, user);
     } catch (err) {
