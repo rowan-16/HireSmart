@@ -5,14 +5,14 @@ import Header from '../components/Header';
 import API from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
-function StatCard({ icon, label, value, sub, accent }) {
+function StatCard({ icon, label, value, sub, accent, to = '/jobs' }) {
   return (
-    <div className="stat-card" style={{ '--accent': accent }}>
+    <Link to={to} className="stat-card" style={{ '--accent': accent, textDecoration: 'none', cursor: 'pointer', display: 'block' }}>
       <div className="stat-icon"><i className={`fa-solid ${icon}`}></i></div>
       <div className="stat-value">{value}</div>
       <div className="stat-label">{label}</div>
       {sub && <div className="stat-sub">{sub}</div>}
-    </div>
+    </Link>
   );
 }
 
@@ -67,12 +67,12 @@ export default function Dashboard() {
         ) : (
           <>
             <div className="stats-grid">
-              <StatCard icon="fa-briefcase" label="Active Jobs" value={stats?.stats?.activeJobs ?? 0} accent="var(--c2)" sub="All hiring open" />
-              <StatCard icon="fa-users" label="Candidates Processed" value={stats?.stats?.totalResumes ?? 0} accent="var(--c3)" />
-              <StatCard icon="fa-percent" label="Average Match" value={`${stats?.stats?.avgMatch ?? 0}%`} accent="var(--success)" sub="Job relevance score" />
-              <StatCard icon="fa-shield-halved" label="Bias Checks Passed" value={`${stats?.stats?.biasChecksPassed ?? 98}%`} accent="var(--c1)" sub="PII removed before scoring" />
-              <StatCard icon="fa-hourglass-half" label="Pending Reviews" value={stats?.stats?.pendingReviews ?? 0} accent="var(--warning)" />
-              <StatCard icon="fa-person-military-pointing" label="Human Overrides" value={stats?.stats?.totalOverrides ?? 0} accent="var(--c3)" sub="Recruiter decisions logged" />
+              <StatCard icon="fa-briefcase" label="Active Jobs" value={stats?.stats?.activeJobs ?? 0} accent="var(--c2)" sub="All hiring open" to="/jobs" />
+              <StatCard icon="fa-users" label="Candidates Processed" value={stats?.stats?.totalResumes ?? 0} accent="var(--c3)" to="/jobs/applications" />
+              <StatCard icon="fa-percent" label="Average Match" value={`${stats?.stats?.avgMatch ?? 0}%`} accent="var(--success)" sub="Job relevance score" to="/jobs/applications" />
+              <StatCard icon="fa-shield-halved" label="Bias Checks Passed" value={`${stats?.stats?.biasChecksPassed ?? 98}%`} accent="var(--c1)" sub="PII removed before scoring" to="/jobs/applications" />
+              <StatCard icon="fa-hourglass-half" label="Pending Reviews" value={stats?.stats?.pendingReviews ?? 0} accent="var(--warning)" to="/jobs/applications" />
+              <StatCard icon="fa-person-military-pointing" label="Human Overrides" value={stats?.stats?.totalOverrides ?? 0} accent="var(--c3)" sub="Recruiter decisions logged" to="/jobs/applications" />
             </div>
 
             {user?.role === 'admin' ? (
