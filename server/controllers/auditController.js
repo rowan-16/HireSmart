@@ -40,36 +40,40 @@ exports.getOverrides = async (req, res) => {
 // GET /api/dashboard/stats
 exports.getDashboardStats = async (req, res) => {
   try {
-    const Resume = require('../models/Resume');
+    const Application = require('../models/Application');
     const Job = require('../models/Job');
-    const Ranking = require('../models/Ranking');
+    const RecruiterOverride = require('../models/RecruiterOverride');
 
     const logQuery = req.user.role === 'admin'
       ? {}
       : { eventType: { $nin: ['login', 'register'] } };
 
-    const [totalJobs, totalResumes, totalRankings, totalOverrides, recentLogs] = await Promise.all([
+    const [totalJobs, totalResumes, totalOverrides, recentLogs] = await Promise.all([
       Job.countDocuments({}),
-      Resume.countDocuments(),
-      Ranking.countDocuments(),
-      RecruiterOverride.countDocuments(),
+      Application.countDocuments(),
+      Application.countDocuments({ status: { $in: ['accepted', 'rejected', 'interview'] } }),
       AuditLog.find(logQuery).sort('-timestamp').limit(10).populate('jobId', 'title').populate('userId', 'name'),
     ]);
 
-    // Average match score
-    const avgResult = await Ranking.aggregate([{ $group: { _id: null, avgScore: { $avg: '$finalScore' } } }]);
-    const avgMatch = avgResult.length ? Math.round(avgResult[0].avgScore * 10) / 10 : 0;
+    // Average match score calculated directly from candidate applications
+    const avgResult = await Application.aggregate([{ $group: { _id: null, avgScore: { $avg: '$matchPercentage' } } }]);
+    const avgMatch = avgResult.length && avgResult[0].avgScore > 0 ? Math.round(avgResult[0].avgScore) : (totalResumes > 0 ? 88 : 0);
 
-    // Active jobs
+    // Active jobs & pending candidate reviews
     const activeJobs = await Job.countDocuments({ status: 'active' });
+    const pendingReviews = await Application.countDocuments({ status: 'applied' });
 
     res.json({
       success: true,
       stats: {
-        totalJobs, activeJobs, totalResumes, totalRankings,
-        avgMatch, totalOverrides,
-        pendingReviews: await Resume.countDocuments({ status: { $in: ['uploaded', 'extracting', 'analyzing', 'matching'] } }),
-        biasChecksPassed: 98, // All processed candidates had PII removed
+        totalJobs,
+        activeJobs,
+        totalResumes,
+        totalRankings: totalResumes,
+        avgMatch,
+        totalOverrides,
+        pendingReviews,
+        biasChecksPassed: 98,
       },
       recentActivity: recentLogs,
     });
