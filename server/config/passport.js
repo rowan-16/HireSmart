@@ -31,7 +31,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
       let googleAvatar = profile.photos?.[0]?.value || profile._json?.picture || profile._json?.avatar_url || profile._json?.picture_url || '';
       if (googleAvatar && googleAvatar.includes('googleusercontent.com')) {
-        googleAvatar = googleAvatar.replace(/=s\d+(-c)?$/, '=s300-c');
+        if (/=s\d+/.test(googleAvatar)) {
+          googleAvatar = googleAvatar.replace(/=s\d+.*$/, '=s300-c');
+        } else {
+          googleAvatar = `${googleAvatar}=s300-c`;
+        }
       }
 
       let role = 'recruiter';
