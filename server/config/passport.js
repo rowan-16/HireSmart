@@ -21,32 +21,26 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       const email = profile.emails?.[0]?.value?.toLowerCase()?.trim();
       if (!email) return done(new Error('No email found in Google profile'), null);
 
+      let role = 'recruiter';
+      let passedName = '';
+      if (req.query.state) {
+        try {
+          const decoded = JSON.parse(Buffer.from(req.query.state, 'base64').toString('utf8'));
+          if (decoded && decoded.role) role = decoded.role;
+          if (decoded && decoded.name) passedName = decoded.name;
+        } catch (e) {
+          if (req.query.state === 'candidate' || req.query.role === 'candidate') role = 'candidate';
+        }
+      }
+
       const googleName = (
         profile.displayName ||
         profile._json?.name ||
         (profile.name ? `${profile.name.givenName || ''} ${profile.name.familyName || ''}`.trim() : '') ||
         (profile._json?.given_name ? `${profile._json.given_name || ''} ${profile._json.family_name || ''}`.trim() : '') ||
+        passedName ||
         email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
       ).trim();
-
-      let googleAvatar = profile.photos?.[0]?.value || profile._json?.picture || profile._json?.avatar_url || profile._json?.picture_url || '';
-      if (googleAvatar && googleAvatar.includes('googleusercontent.com')) {
-        if (/=s\d+/.test(googleAvatar)) {
-          googleAvatar = googleAvatar.replace(/=s\d+.*$/, '=s300-c');
-        } else {
-          googleAvatar = `${googleAvatar}=s300-c`;
-        }
-      }
-
-      let role = 'recruiter';
-      if (req.query.state) {
-        try {
-          const decoded = JSON.parse(Buffer.from(req.query.state, 'base64').toString('utf8'));
-          if (decoded && decoded.role) role = decoded.role;
-        } catch (e) {
-          if (req.query.state === 'candidate' || req.query.role === 'candidate') role = 'candidate';
-        }
-      }
 
       let user = await User.findOne({
         $or: [{ googleId: profile.id }, { email }]

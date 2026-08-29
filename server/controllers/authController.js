@@ -9,9 +9,20 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     if (!name || !email || !password) return res.status(400).json({ success: false, message: 'Name, email, and password required' });
-    const exists = await User.findOne({ email });
+    const cleanEmail = email.toLowerCase().trim();
+    const exists = await User.findOne({ email: cleanEmail });
     if (exists) return res.status(400).json({ success: false, message: 'Email already registered' });
-    const user = await User.create({ name, email, password, role: role || 'recruiter' });
+
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4285F4&color=fff&size=128&bold=true`;
+
+    const user = await User.create({
+      name,
+      email: cleanEmail,
+      password,
+      role: role || 'recruiter',
+      avatar: defaultAvatar,
+    });
+
     await logEvent('register', { userId: user._id, metadata: { email: user.email } });
     const token = signToken(user._id);
     res.status(201).json({
@@ -22,7 +33,7 @@ exports.register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar || '',
+        avatar: user.avatar,
         resumeUrl: user.resumeUrl || '',
       },
     });
