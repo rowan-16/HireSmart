@@ -179,8 +179,11 @@ router.get('/google/callback', (req, res, next) => {
     const clientUrl = getClientUrl(req, clientOrigin);
 
     if (err || !user) {
-      console.warn('[Google OAuth Callback Fallback]:', err || info);
-      return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin);
+      console.error('[Google OAuth Callback Error]:', err || info);
+      if (passedEmail) {
+        return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin);
+      }
+      return res.redirect(`${clientUrl}/login?error=google_failed`);
     }
 
     try {
@@ -197,11 +200,11 @@ router.get('/google/callback', (req, res, next) => {
       return res.redirect(redirectUrl);
     } catch (saveErr) {
       console.error('[Save Google User Error]:', saveErr);
-      return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin);
+      return res.redirect(`${clientUrl}/login?error=google_failed`);
     }
   })(req, res, (err) => {
-    console.error('[Passport Callback Error]:', err);
-    return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin);
+    console.error('[Passport Callback Exception]:', err);
+    return res.redirect(`${getClientUrl(req, clientOrigin)}/login?error=google_failed`);
   });
 });
 
