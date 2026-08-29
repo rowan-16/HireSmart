@@ -11,7 +11,9 @@ export default function CandidateDashboard() {
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hasViewedApplications, setHasViewedApplications] = useState(false);
+  const [hasViewedApplications, setHasViewedApplications] = useState(() => {
+    try { return localStorage.getItem('hasViewedApplications') === 'true'; } catch { return false; }
+  });
 
   // Resume Analyzer state
   const [resumeFile, setResumeFile] = useState(null);
@@ -129,6 +131,7 @@ export default function CandidateDashboard() {
             onClick={() => {
               setActiveTab('applications');
               setHasViewedApplications(true);
+              try { localStorage.setItem('hasViewedApplications', 'true'); } catch {}
             }}
             className={`btn ${activeTab === 'applications' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ borderRadius: '12px', fontSize: '0.88rem', position: 'relative' }}
