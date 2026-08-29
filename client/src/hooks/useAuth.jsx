@@ -47,10 +47,11 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
-  const loginWithGoogle = useCallback((role = 'recruiter', email = '', name = '') => {
+  const loginWithGoogle = useCallback((role = 'recruiter', email = '', name = '', isSignUp = false) => {
     let url = `${API_BASE_URL}/auth/google?role=${role}`;
     if (email) url += `&email=${encodeURIComponent(email)}`;
     if (name) url += `&name=${encodeURIComponent(name)}`;
+    if (isSignUp) url += `&isSignUp=true`;
     if (typeof window !== 'undefined' && window.location.origin) {
       url += `&client_origin=${encodeURIComponent(window.location.origin)}`;
     }

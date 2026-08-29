@@ -54,12 +54,17 @@ const getClientUrl = (req, stateClientOrigin = '') => {
 };
 
 // Helper for fallback login execution when Google OAuth credentials are not configured or fail
-const executeFallbackLogin = async (req, res, role, passedEmail, passedName, clientOrigin) => {
+const executeFallbackLogin = async (req, res, role, passedEmail, passedName, clientOrigin, isSignUp = false) => {
   const clientUrl = getClientUrl(req, clientOrigin);
   try {
     let userEmail = (passedEmail || req.query.email || '').toLowerCase().trim();
+    const shouldCreateNew = isSignUp || req.query.isSignUp === 'true';
+
     if (!userEmail) {
-      if (role === 'candidate') {
+      if (shouldCreateNew) {
+        const uniqueTag = Date.now().toString().slice(-5);
+        userEmail = role === 'candidate' ? `candidate_${uniqueTag}@hiresmart.ai` : `company_${uniqueTag}@hiresmart.ai`;
+      } else if (role === 'candidate') {
         userEmail = 'rocklandrowanm@gmail.com';
       } else if (role === 'admin') {
         userEmail = 'admin@hiresmart.ai';
@@ -76,6 +81,10 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         userName = 'Jowan M';
       } else if (userEmail.includes('admin')) {
         userName = 'Admin Head';
+      } else if (userEmail.startsWith('company_')) {
+        userName = 'New Company Recruiter';
+      } else if (userEmail.startsWith('candidate_')) {
+        userName = 'New Job Seeker';
       } else {
         const prefix = userEmail.split('@')[0];
         userName = prefix.replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -92,7 +101,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         email: userEmail,
         googleId: `google_oauth_${Date.now()}`,
         avatar: userAvatar,
-        role: role || (userEmail.includes('jowanm') ? 'recruiter' : 'candidate'),
+        role: role || (userEmail.includes('jowanm') || userEmail.startsWith('company_') ? 'recruiter' : 'candidate'),
       });
     } else {
       if (fallbackUser.email === 'admin@hiresmart.ai') {
@@ -121,11 +130,12 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
   }
 };
 
-// Google OAuth Handler (Full page redirect to Google OAuth 2.0)
+// Google OAuth Initial Route
 router.get('/google', (req, res, next) => {
   const role = req.query.role || 'recruiter';
   const email = req.query.email || '';
   const name = req.query.name || '';
+  const isSignUp = req.query.isSignUp === 'true';
   let clientOrigin = req.query.client_origin || '';
   if (!clientOrigin && req.headers.referer) {
     try {
@@ -136,18 +146,18 @@ router.get('/google', (req, res, next) => {
 
   // If real Google OAuth credentials are not configured, perform instant fallback login
   if (!isGoogleOauthConfigured()) {
-    return executeFallbackLogin(req, res, role, email, name, clientOrigin);
+    return executeFallbackLogin(req, res, role, email, name, clientOrigin, isSignUp);
   }
 
   // Store params in state
-  const stateData = JSON.stringify({ role, email, name, clientOrigin });
+  const stateData = JSON.stringify({ role, email, name, clientOrigin, isSignUp });
   const stateEncoded = Buffer.from(stateData).toString('base64');
 
   try {
     passport.authenticate('google', { scope: ['profile', 'email'], state: stateEncoded })(req, res, next);
   } catch (err) {
     console.error('[Passport authenticate error]:', err);
-    return executeFallbackLogin(req, res, role, email, name, clientOrigin);
+    return executeFallbackLogin(req, res, role, email, name, clientOrigin, isSignUp);
   }
 });
 
@@ -157,6 +167,7 @@ router.get('/google/callback', (req, res, next) => {
   let passedEmail = '';
   let passedName = '';
   let clientOrigin = '';
+  let isSignUp = false;
 
   try {
     if (req.query.state) {
@@ -165,6 +176,7 @@ router.get('/google/callback', (req, res, next) => {
       passedEmail = decoded.email || '';
       passedName = decoded.name || '';
       clientOrigin = decoded.clientOrigin || '';
+      isSignUp = !!decoded.isSignUp;
     }
   } catch (e) {
     if (req.query.state === 'candidate') role = 'candidate';
@@ -172,7 +184,7 @@ router.get('/google/callback', (req, res, next) => {
   }
 
   if (!isGoogleOauthConfigured()) {
-    return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin);
+    return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin, isSignUp);
   }
 
   passport.authenticate('google', { session: false }, async (err, user, info) => {
@@ -180,7 +192,7 @@ router.get('/google/callback', (req, res, next) => {
 
     if (err || !user) {
       console.warn('[Google OAuth Callback Fallback]:', err || info);
-      return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin);
+      return executeFallbackLogin(req, res, role, passedEmail, passedName, clientOrigin, isSignUp);
     }
 
     try {
