@@ -65,7 +65,14 @@ export default function Login() {
       toast.success(`Welcome back (${role === 'recruiter' ? 'Company' : 'Job Seeker'})!`);
       navigate(role === 'candidate' ? '/candidate/dashboard' : '/dashboard');
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Login failed');
+      if (err?.response?.data?.redirectToRegister || err?.response?.status === 404) {
+        toast.error('Account does not exist! Redirecting to Sign Up page...');
+        setTimeout(() => {
+          navigate('/register', { state: { email, role } });
+        }, 1200);
+      } else {
+        toast.error(err?.response?.data?.message || 'Login failed');
+      }
     } finally { setLoading(false); }
   };
 

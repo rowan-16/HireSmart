@@ -41,40 +41,36 @@ exports.login = async (req, res) => {
     let user = await User.findOne({ email: cleanEmail });
 
     if (!user) {
-      // Auto-register candidate / recruiter account on first login attempt
-      const defaultName = cleanEmail.includes('rocklandrowan') ? 'Rockland Rowan' : cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      user = await User.create({
-        name: defaultName,
-        email: cleanEmail,
-        password: password,
-        role: role || 'candidate',
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultName)}&background=4285F4&color=fff&bold=true`,
+      return res.status(404).json({
+        success: false,
+        redirectToRegister: true,
+        message: 'Account does not exist. Please sign up to create your account.',
       });
-    } else {
-      // If user exists without password or has password mismatch, update password and authenticate
-      if (!user.password) {
-        user.password = password;
-        await user.save();
-      } else {
-        const match = await user.matchPassword(password);
-        if (!match && user.role !== 'admin') {
-          user.password = password;
-          await user.save();
-        } else if (!match && user.role === 'admin') {
-          return res.status(401).json({ success: false, message: 'Invalid Admin password' });
-        }
-      }
+    }
 
-      // Sync role tab if selected (preserve superuser admin)
-      if (role && user.role !== 'admin') {
-        user.role = role;
+    if (user.password) {
+      const isMatch = await user.matchPassword(password);
+      if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
+    } else {
+      user.password = password;
+    }
+
+    if (role && user.role !== 'admin') {
+      user.role = role;
+    }
+
+    if (user.email.includes('rocklandrowan') && (!user.name || user.name.toLowerCase().includes('jowan') || user.name === 'rocklandrowanm')) {
+      user.name = 'M Rockland Rowan';
     }
 
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
     await logEvent('login', { userId: user._id, metadata: { email: user.email } });
     const token = signToken(user._id);
+
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=4285F4&color=fff&size=128&bold=true`;
 
     res.json({
       success: true,
@@ -84,7 +80,7 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar || '',
+        avatar: user.avatar || fallbackAvatar,
         resumeUrl: user.resumeUrl || '',
       },
     });

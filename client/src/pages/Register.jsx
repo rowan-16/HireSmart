@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import './Login.css';
@@ -12,9 +12,15 @@ const THEMES = [
 ];
 
 export default function Register() {
-  const [role, setRole] = useState('recruiter');
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const initialRole = location.state?.role || searchParams.get('role') || 'recruiter';
+  const initialEmail = location.state?.email || searchParams.get('email') || '';
+
+  const [role, setRole] = useState(initialRole);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,6 +28,12 @@ export default function Register() {
   const cardRef = useRef(null);
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (searchParams.get('error') === 'account_not_found') {
+      toast.error('Account does not exist. Please sign up to create your account.');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const card = cardRef.current;
