@@ -15,7 +15,7 @@ export default function Register() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const initialRole = location.state?.role || searchParams.get('role') || 'recruiter';
+  const initialRole = location.state?.role || searchParams.get('role') || 'candidate';
   const initialEmail = location.state?.email || searchParams.get('email') || '';
 
   const [role, setRole] = useState(initialRole);
@@ -98,20 +98,20 @@ export default function Register() {
                 <button
                   type="button"
                   role="tab"
-                  aria-selected={role === 'recruiter'}
-                  className={`role-tab ${role === 'recruiter' ? 'active' : ''}`}
-                  onClick={() => setRole('recruiter')}
-                >
-                  <i className="fa-solid fa-building"></i> Company
-                </button>
-                <button
-                  type="button"
-                  role="tab"
                   aria-selected={role === 'candidate'}
                   className={`role-tab ${role === 'candidate' ? 'active' : ''}`}
                   onClick={() => setRole('candidate')}
                 >
                   <i className="fa-solid fa-user"></i> Job Seeker
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={role === 'recruiter'}
+                  className={`role-tab ${role === 'recruiter' ? 'active' : ''}`}
+                  onClick={() => setRole('recruiter')}
+                >
+                  <i className="fa-solid fa-building"></i> Company
                 </button>
               </div>
 

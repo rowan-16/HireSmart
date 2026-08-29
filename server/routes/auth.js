@@ -64,7 +64,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
       } else if (role === 'admin') {
         userEmail = 'admin@hiresmart.ai';
       } else {
-        userEmail = 'recruiter@hiresmart.ai';
+        userEmail = 'jowanm1234@gmail.com';
       }
     }
 
@@ -72,10 +72,10 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
     if (!userName || userName.trim() === '') {
       if (userEmail.includes('rocklandrowan')) {
         userName = 'M Rockland Rowan';
+      } else if (userEmail.includes('jowanm')) {
+        userName = 'Jowan M';
       } else if (userEmail.includes('admin')) {
         userName = 'Admin Head';
-      } else if (userEmail.includes('recruiter')) {
-        userName = 'Company Recruiter';
       } else {
         const prefix = userEmail.split('@')[0];
         userName = prefix.replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -92,7 +92,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         email: userEmail,
         googleId: `google_oauth_${Date.now()}`,
         avatar: userAvatar,
-        role: role || 'candidate',
+        role: role || (userEmail.includes('jowanm') ? 'recruiter' : 'candidate'),
       });
     } else {
       if (fallbackUser.email === 'admin@hiresmart.ai') {
@@ -102,7 +102,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         if (role) fallbackUser.role = role;
         if (passedName) {
           fallbackUser.name = passedName;
-        } else if (!fallbackUser.name || fallbackUser.name.toLowerCase().includes('jowan') || fallbackUser.name === 'Company Recruiter' || fallbackUser.name === 'Company' || fallbackUser.name === userEmail.split('@')[0]) {
+        } else if (!fallbackUser.name || fallbackUser.name === 'Company Recruiter' || fallbackUser.name === 'Company' || fallbackUser.name === userEmail.split('@')[0]) {
           fallbackUser.name = userName;
         }
       }

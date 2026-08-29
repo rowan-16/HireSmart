@@ -14,7 +14,7 @@ const THEMES = [
 ];
 
 export default function Login() {
-  const [role, setRole] = useState('recruiter');
+  const [role, setRole] = useState('candidate');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -116,20 +116,20 @@ export default function Login() {
                 <button
                   type="button"
                   role="tab"
-                  aria-selected={role === 'recruiter'}
-                  className={`role-tab ${role === 'recruiter' ? 'active' : ''}`}
-                  onClick={() => setRole('recruiter')}
-                >
-                  <i className="fa-solid fa-building"></i> Company
-                </button>
-                <button
-                  type="button"
-                  role="tab"
                   aria-selected={role === 'candidate'}
                   className={`role-tab ${role === 'candidate' ? 'active' : ''}`}
                   onClick={() => setRole('candidate')}
                 >
                   <i className="fa-solid fa-user"></i> Job Seeker
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={role === 'recruiter'}
+                  className={`role-tab ${role === 'recruiter' ? 'active' : ''}`}
+                  onClick={() => setRole('recruiter')}
+                >
+                  <i className="fa-solid fa-building"></i> Company
                 </button>
                 <button
                   type="button"
