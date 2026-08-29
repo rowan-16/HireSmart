@@ -54,17 +54,13 @@ const getClientUrl = (req, stateClientOrigin = '') => {
 };
 
 // Helper for fallback login execution when Google OAuth credentials are not configured or fail
-const executeFallbackLogin = async (req, res, role, passedEmail, passedName, clientOrigin, isSignUp = false) => {
+const executeFallbackLogin = async (req, res, role, passedEmail, passedName, clientOrigin) => {
   const clientUrl = getClientUrl(req, clientOrigin);
   try {
     let userEmail = (passedEmail || req.query.email || '').toLowerCase().trim();
-    const shouldCreateNew = isSignUp || req.query.isSignUp === 'true';
 
     if (!userEmail) {
-      if (shouldCreateNew) {
-        const uniqueTag = Date.now().toString().slice(-5);
-        userEmail = role === 'candidate' ? `candidate_${uniqueTag}@hiresmart.ai` : `company_${uniqueTag}@hiresmart.ai`;
-      } else if (role === 'candidate') {
+      if (role === 'candidate') {
         userEmail = 'rocklandrowanm@gmail.com';
       } else if (role === 'admin') {
         userEmail = 'admin@hiresmart.ai';
@@ -81,10 +77,6 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         userName = 'Jowan M';
       } else if (userEmail.includes('admin')) {
         userName = 'Admin Head';
-      } else if (userEmail.startsWith('company_')) {
-        userName = 'New Company Recruiter';
-      } else if (userEmail.startsWith('candidate_')) {
-        userName = 'New Job Seeker';
       } else {
         const prefix = userEmail.split('@')[0];
         userName = prefix.replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
