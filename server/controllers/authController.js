@@ -95,6 +95,13 @@ exports.login = async (req, res) => {
 
 // GET /api/auth/me
 exports.getMe = async (req, res) => {
+  if (req.user && req.user.email && req.user.email.includes('rocklandrowan')) {
+    if (!req.user.name || req.user.name.toLowerCase().includes('jowan') || req.user.name === 'rocklandrowanm') {
+      req.user.name = 'M Rockland Rowan';
+      await req.user.save({ validateBeforeSave: false });
+    }
+  }
+
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(req.user.name || 'User')}&background=4285F4&color=fff&size=128&bold=true`;
   res.json({
     success: true,

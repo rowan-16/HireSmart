@@ -62,16 +62,15 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
       if (role === 'admin') {
         userEmail = 'admin@hiresmart.ai';
       } else {
-        userEmail = 'jowanm1234@gmail.com';
+        console.warn('[Fallback Login Warning]: Google OAuth failed or missing credentials and no email was specified.');
+        return res.redirect(`${clientUrl}/login?error=google_failed`);
       }
     }
 
     let userName = passedName || req.query.name;
-    if (!userName) {
-      if (userEmail.includes('jowanm')) {
-        userName = 'jowan m';
-      } else if (userEmail.includes('rocklandrowan')) {
-        userName = 'Rockland Rowan';
+    if (!userName || userName.trim() === '') {
+      if (userEmail.includes('rocklandrowan')) {
+        userName = 'M Rockland Rowan';
       } else if (userEmail.includes('admin')) {
         userName = 'Admin Head';
       } else {
@@ -100,10 +99,11 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         fallbackUser.role = role;
         if (passedName) {
           fallbackUser.name = passedName;
-        } else if (!fallbackUser.name || fallbackUser.name === 'Company Recruiter' || fallbackUser.name === 'Company' || fallbackUser.name === userEmail.split('@')[0]) {
+        } else if (!fallbackUser.name || fallbackUser.name.toLowerCase().includes('jowan') || fallbackUser.name === 'Company Recruiter' || fallbackUser.name === 'Company' || fallbackUser.name === userEmail.split('@')[0]) {
           fallbackUser.name = userName;
         }
       }
+      if (passedAvatar) fallbackUser.avatar = passedAvatar;
       if (!fallbackUser.avatar) fallbackUser.avatar = userAvatar;
     }
     fallbackUser.lastLogin = new Date();
