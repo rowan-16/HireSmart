@@ -100,7 +100,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
         fallbackUser.role = role;
         if (passedName) {
           fallbackUser.name = passedName;
-        } else if (fallbackUser.name === 'Company Recruiter' || fallbackUser.name === 'Company') {
+        } else if (!fallbackUser.name || fallbackUser.name === 'Company Recruiter' || fallbackUser.name === 'Company' || fallbackUser.name === userEmail.split('@')[0]) {
           fallbackUser.name = userName;
         }
       }
@@ -110,7 +110,7 @@ const executeFallbackLogin = async (req, res, role, passedEmail, passedName, cli
     await fallbackUser.save({ validateBeforeSave: false });
 
     const token = jwt.sign({ id: fallbackUser._id }, process.env.JWT_SECRET || 'secret', { expiresIn: process.env.JWT_EXPIRE || '7d' });
-    const redirectUrl = `${clientUrl}/auth/google/success?token=${token}&name=${encodeURIComponent(fallbackUser.name)}&email=${encodeURIComponent(fallbackUser.email)}&role=${fallbackUser.role}&avatar=${encodeURIComponent(fallbackUser.avatar || '')}`;
+    const redirectUrl = `${clientUrl}/auth/google/success?token=${token}&id=${fallbackUser._id}&name=${encodeURIComponent(fallbackUser.name)}&email=${encodeURIComponent(fallbackUser.email)}&role=${fallbackUser.role}&avatar=${encodeURIComponent(fallbackUser.avatar || '')}`;
     return res.redirect(redirectUrl);
   } catch (fallbackErr) {
     console.error('[Fallback Login Error]:', fallbackErr);
@@ -189,7 +189,8 @@ router.get('/google/callback', (req, res, next) => {
       await logEvent('login', { userId: user._id, metadata: { email: user.email, provider: 'google_oauth' } });
 
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: process.env.JWT_EXPIRE || '7d' });
-      const redirectUrl = `${clientUrl}/auth/google/success?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}&avatar=${encodeURIComponent(user.avatar || '')}`;
+      const avatarToSend = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=4285F4&color=fff&size=128&bold=true`;
+      const redirectUrl = `${clientUrl}/auth/google/success?token=${token}&id=${user._id}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}&avatar=${encodeURIComponent(avatarToSend)}`;
       return res.redirect(redirectUrl);
     } catch (saveErr) {
       console.error('[Save Google User Error]:', saveErr);

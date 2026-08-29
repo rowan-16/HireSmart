@@ -112,6 +112,7 @@ export default function Header({ title, subtitle }) {
             <img
               src={avatarUrl}
               alt={user?.name || 'Google Profile'}
+              referrerPolicy="no-referrer"
               style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(69, 243, 255, 0.4)' }}
               onError={(e) => {
                 e.target.onerror = null;

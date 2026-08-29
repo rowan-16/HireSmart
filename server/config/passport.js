@@ -16,8 +16,24 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passReqToCallback: true,
   }, async (req, accessToken, refreshToken, profile, done) => {
     try {
-      console.log('[Google Profile Received]:', profile ? `${profile.displayName} <${profile.emails?.[0]?.value}>` : 'NO PROFILE');
-      const googleAvatar = profile.photos?.[0]?.value || profile._json?.picture || '';
+      console.log('[Google Profile Received]:', profile ? `${profile.displayName || profile._json?.name} <${profile.emails?.[0]?.value}>` : 'NO PROFILE');
+      
+      const email = profile.emails?.[0]?.value?.toLowerCase()?.trim();
+      if (!email) return done(new Error('No email found in Google profile'), null);
+
+      const googleName = (
+        profile.displayName ||
+        profile._json?.name ||
+        (profile.name ? `${profile.name.givenName || ''} ${profile.name.familyName || ''}`.trim() : '') ||
+        (profile._json?.given_name ? `${profile._json.given_name || ''} ${profile._json.family_name || ''}`.trim() : '') ||
+        email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      ).trim();
+
+      let googleAvatar = profile.photos?.[0]?.value || profile._json?.picture || profile._json?.avatar_url || profile._json?.picture_url || '';
+      if (googleAvatar && googleAvatar.includes('googleusercontent.com')) {
+        googleAvatar = googleAvatar.replace(/=s\d+(-c)?$/, '=s300-c');
+      }
+
       let role = 'recruiter';
       if (req.query.state) {
         try {
@@ -27,27 +43,27 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           if (req.query.state === 'candidate' || req.query.role === 'candidate') role = 'candidate';
         }
       }
-      
-      const email = profile.emails?.[0]?.value?.toLowerCase()?.trim();
-      if (!email) return done(new Error('No email found in Google profile'), null);
 
       let user = await User.findOne({
         $or: [{ googleId: profile.id }, { email }]
       });
 
+      const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(googleName)}&background=4285F4&color=fff&size=128&bold=true`;
+
       if (user) {
         user.googleId = profile.id;
         user.role = role;
         if (googleAvatar) user.avatar = googleAvatar;
-        if (profile.displayName) user.name = profile.displayName;
+        if (!user.avatar) user.avatar = fallbackAvatar;
+        if (googleName) user.name = googleName;
         user.lastLogin = new Date();
         await user.save({ validateBeforeSave: false });
       } else {
         user = await User.create({
-          name: profile.displayName || email.split('@')[0],
+          name: googleName,
           email: email,
           googleId: profile.id,
-          avatar: googleAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.displayName || email)}&background=4285F4&color=fff&bold=true`,
+          avatar: googleAvatar || fallbackAvatar,
           role,
           lastLogin: new Date(),
         });

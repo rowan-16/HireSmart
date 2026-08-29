@@ -10,13 +10,14 @@ export default function GoogleSuccess() {
 
   useEffect(() => {
     const token = params.get('token');
+    const id = params.get('id');
     const name = params.get('name');
     const email = params.get('email');
     const role = params.get('role');
     const avatar = params.get('avatar') || '';
 
     if (token) {
-      const userData = { name, email, role, avatar };
+      const userData = { id, name, email, role, avatar };
       if (window.opener) {
         // Send login payload to main window and close popup
         window.opener.postMessage({

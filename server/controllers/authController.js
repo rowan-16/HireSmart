@@ -95,6 +95,7 @@ exports.login = async (req, res) => {
 
 // GET /api/auth/me
 exports.getMe = async (req, res) => {
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(req.user.name || 'User')}&background=4285F4&color=fff&size=128&bold=true`;
   res.json({
     success: true,
     user: {
@@ -102,16 +103,16 @@ exports.getMe = async (req, res) => {
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
-      avatar: req.user.avatar || '',
+      avatar: req.user.avatar || fallbackAvatar,
       resumeUrl: req.user.resumeUrl || '',
-      headline: req.user.headline,
-      phone: req.user.phone,
-      location: req.user.location,
-      skills: req.user.skills,
-      yearsOfExperience: req.user.yearsOfExperience,
-      bio: req.user.bio,
-      linkedin: req.user.linkedin,
-      github: req.user.github,
+      headline: req.user.headline || '',
+      phone: req.user.phone || '',
+      location: req.user.location || '',
+      skills: req.user.skills || [],
+      yearsOfExperience: req.user.yearsOfExperience || 0,
+      bio: req.user.bio || '',
+      linkedin: req.user.linkedin || '',
+      github: req.user.github || '',
     },
   });
 };
@@ -120,7 +121,8 @@ exports.getMe = async (req, res) => {
 exports.googleCallback = (req, res) => {
   const token = signToken(req.user._id);
   const clientUrl = (req.headers.referer ? new URL(req.headers.referer).origin : (process.env.CLIENT_URL || 'https://hire-smart-sandy.vercel.app')).replace(/\/$/, '');
-  res.redirect(`${clientUrl}/auth/google/success?token=${token}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}&role=${req.user.role}`);
+  const avatarToSend = req.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(req.user.name)}&background=4285F4&color=fff&size=128&bold=true`;
+  res.redirect(`${clientUrl}/auth/google/success?token=${token}&id=${req.user._id}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}&role=${req.user.role}&avatar=${encodeURIComponent(avatarToSend)}`);
 };
 
 // DELETE /api/auth/delete-account
