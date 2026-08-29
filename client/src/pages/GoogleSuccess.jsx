@@ -30,7 +30,12 @@ export default function GoogleSuccess() {
         loginFromToken(token, userData).then(freshUser => {
           const finalUser = freshUser || userData;
           toast.success(`Welcome, ${finalUser.name || name || 'User'}!`);
-          const targetRole = finalUser.role || role;
+          const targetRole = finalUser.role || role || 'candidate';
+          const targetPath = targetRole === 'candidate' ? '/candidate/dashboard' : '/dashboard';
+          navigate(targetPath, { replace: true });
+        }).catch(err => {
+          console.warn('loginFromToken error:', err);
+          const targetRole = role || 'candidate';
           const targetPath = targetRole === 'candidate' ? '/candidate/dashboard' : '/dashboard';
           navigate(targetPath, { replace: true });
         });
